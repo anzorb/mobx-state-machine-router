@@ -1,37 +1,25 @@
 import queryString from 'query-string';
 import { observable, action, computed, extendObservable, toJS } from 'mobx';
 import { createHashHistory } from 'history';
-import { sanitize } from './utils';
-
-const transition = (states, curState, actionName) => {
-  const result = states[curState].actions[actionName];
-
-  if (result == null) {
-    console.warn('no state for action ', curState, actionName);
-  } else if (curState !== result) {
-    console.log('STATE MACHINE: ', curState, actionName, result);
-  }
-
-  return result;
-};
+import { sanitize, transition } from './utils';
 
 class MobxStateMachineRouter {
-  @observable location = null;
+  @observable _location = null;
 
-  reverseRoutes = {};
+  _reverseRoutes = {};
 
-  @observable.ref history = null;
+  @observable.ref _history = null;
 
   @observable.ref query = {};
 
   @observable state = null;
 
-  @action setState(state) {
+  @action _setState(state) {
     this.state = state;
   }
 
   @action
-  setQuery(query) {
+  _setQuery(query) {
     for (const key in toJS(this.query)) {
       if (typeof query[key] !== 'undefined') {
         this.query[key] = query[key];
@@ -59,10 +47,10 @@ class MobxStateMachineRouter {
   }
 
   emit(actionName, query) {
-    const newState = transition(this.states, this.state, actionName);
+    const newState = transition(this._states, this.state, actionName);
     if (actionName === 'error') {
-      this.setState(newState);
-      this.history.replace('/');
+      this._setState(newState);
+      this._history.replace('/');
       // TODO: DANGER: this can get stuck in a reload loop > need to guard + report errors
       window.location.reload();
 
@@ -70,15 +58,14 @@ class MobxStateMachineRouter {
     }
 
     if (newState != null) {
-      this.setQuery({ ...this.query, ...query });
+      this._setQuery({ ...this.query, ...query });
       if (newState !== 'noop') {
-        this.setState(newState);
+        this._setState(newState);
       }
-      const toURL = `${this.states[this.state].url}?${this.queryURL}`;
+      const toURL = `${this._states[this.state].url}?${this.queryURL}`;
       // prevent pushing the same path
-      if (`${this.location.pathname}${this.location.search}` !== toURL) {
-        this.history.push(toURL);
-        document.title = this.state;
+      if (`${this._location.pathname}${this._location.search}` !== toURL) {
+        this._history.push(toURL);
       }
     }
   }
@@ -89,41 +76,43 @@ class MobxStateMachineRouter {
     query = {},
     history = createHashHistory()
   }) {
+    this._parseURL = this._parseURL.bind(this);
     for (const key in query) {
       extendObservable(this.query, {
         [key]: query[key]
       });
     }
 
-    this.states = states;
-    this.setState(startState);
+    this._states = states;
+    this._setState(startState);
     this.emit = this.emit.bind(this);
 
     for (const i in states) {
-      const route = this.states[i].url;
-      this.reverseRoutes[route] = i;
+      const route = this._states[i].url;
+      this._reverseRoutes[route] = i;
     }
+    this._setHistory(history);
+    this._setLocation(this._history.location);
 
-    this.setHistory(history);
-    this.setLocation(this.history.location);
+    this._setState(this._reverseRoutes[this._location.pathname]);
+    this._setQuery(queryString.parse(this._location.search));
 
-    this.setState(this.reverseRoutes[this.location.pathname]);
-    this.setQuery(queryString.parse(this.location.search));
+    this._history.listen(this._parseURL);
+  }
 
-    this.history.listen(location => {
-      this.setLocation(location);
-      this.setState(this.reverseRoutes[location.pathname]);
-    });
+  _parseURL(location) {
+    this._setLocation(location);
+    this._setState(this._reverseRoutes[location.pathname]);
   }
 
   @action
-  setLocation(location) {
-    this.location = location;
+  _setLocation(location) {
+    this._location = location;
   }
 
   @action
-  setHistory(history) {
-    this.history = history;
+  _setHistory(history) {
+    this._history = history;
   }
 }
 export default MobxStateMachineRouter;
