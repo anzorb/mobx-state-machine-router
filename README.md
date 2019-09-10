@@ -1,1 +1,3 @@
+[![CircleCI](https://circleci.com/gh/interestingChoice/mobx-state-machine-router.svg?style=svg)](https://circleci.com/gh/interestingChoice/mobx-state-machine-router)
+
 TBD...
