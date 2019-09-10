@@ -26,7 +26,7 @@
     "lint:fix": "npm run lint --fix",
     "prepare": "npm run build",
     "prerelease": "npm run lint:fix && npm run test:coverage && npm run build",
-    "release": "npm publish",
+    "release": "np publish",
     "predeploy": "npm run styleguide:build",
     "deploy": "gh-pages -d styleguide"
   },

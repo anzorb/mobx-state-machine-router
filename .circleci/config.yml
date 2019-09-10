@@ -1,0 +1,8 @@
+version: 2
+ jobs:
+   build:
+     docker:
+       - image: circleci/node:11.7.0
+     steps:
+       - checkout
+       - run: yarn run prerelease
