@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="9" failures="0" time="0.865">
+  <testsuite name="MobX state machine router" errors="0" failures="0" skipped="0" timestamp="2019-09-10T02:34:44" time="0.474" tests="9">
+    <testcase classname="MobX state machine router basics should init" name="MobX state machine router basics should init" time="0.017">
+    </testcase>
+    <testcase classname="MobX state machine router basics should do basic routing" name="MobX state machine router basics should do basic routing" time="0.005">
+    </testcase>
+    <testcase classname="MobX state machine router basics should update query params" name="MobX state machine router basics should update query params" time="0.002">
+    </testcase>
+    <testcase classname="MobX state machine router basics should nullify query params" name="MobX state machine router basics should nullify query params" time="0.002">
+    </testcase>
+    <testcase classname="MobX state machine router basics should support child states" name="MobX state machine router basics should support child states" time="0.002">
+    </testcase>
+    <testcase classname="MobX state machine router reactivity should allow us to listen to specific query changes" name="MobX state machine router reactivity should allow us to listen to specific query changes" time="0.003">
+    </testcase>
+    <testcase classname="MobX state machine router reactivity should not change state if resulting state does not exist" name="MobX state machine router reactivity should not change state if resulting state does not exist" time="0.002">
+    </testcase>
+    <testcase classname="MobX state machine router reactivity should allow adding dynamic query params at runtime" name="MobX state machine router reactivity should allow adding dynamic query params at runtime" time="0.002">
+    </testcase>
+    <testcase classname="MobX state machine router react to url changes should parse URL into query observables" name="MobX state machine router react to url changes should parse URL into query observables" time="0">
+    </testcase>
+  </testsuite>
+</testsuites>
