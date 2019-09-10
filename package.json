@@ -115,6 +115,10 @@
       "web.jsx",
       "jsx",
       "node"
+    ],
+    "reporters": [
+      "default",
+      "jest-junit"
     ]
   },
   "peerDependencies": {
