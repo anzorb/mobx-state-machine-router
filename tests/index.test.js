@@ -1,34 +1,32 @@
-import MobxStateMachineRouter from '../src';
 import { createHashHistory } from 'history';
 import { observe } from 'mobx';
-import { JSDOM } from 'jsdom';
-import { parseURL } from 'whatwg-url';
+import MobxStateMachineRouter from '../src';
 
-Object.defineProperty(global, 'window', {
-  writable: true,
-  value: global.window
-});
+// Object.defineProperty(global, 'window', {
+//   writable: true,
+//   value: global.window
+// });
 
-const makeLocation = url => {
-  const tokens = url.split('/');
-  const pathname = tokens[1].split('?')[0];
-  const query = tokens[1].split('?')[1]; //.split('&');
-  const queryObj = {};
-  for (let i = 0; i < query.length; i++) {
-    const items = query[i].split('=');
-    queryObj[items[0]] = items[1];
-  }
+// const makeLocation = url => {
+//   const tokens = url.split('/');
+//   const pathname = tokens[1].split('?')[0];
+//   const query = tokens[1].split('?')[1]; // .split('&');
+//   const queryObj = {};
+//   for (let i = 0; i < query.length; i++) {
+//     const items = query[i].split('=');
+//     queryObj[items[0]] = items[1];
+//   }
 
-  return {
-    pathname,
-    hash: pathname,
-    href: url,
-    search: '?' + query
-  };
-  //while (done === false) {}
-  //const search = tokens[3].split('?=')[1].split('&=');
-  //console.log(queryObj);
-};
+//   return {
+//     pathname,
+//     hash: pathname,
+//     href: url,
+//     search: `?${query}`
+//   };
+//   // while (done === false) {}
+//   // const search = tokens[3].split('?=')[1].split('&=');
+//   // console.log(queryObj);
+// };
 
 const states = {
   HOME: {
@@ -59,7 +57,6 @@ const states = {
 describe('MobX state machine router', () => {
   let stateMachineRouter;
   beforeEach(() => {
-    //window = new JSDOM(undefined, { url: 'http://google.com' }).window;
     stateMachineRouter = new MobxStateMachineRouter({
       states,
       startState: 'HOME',
@@ -115,7 +112,6 @@ describe('MobX state machine router', () => {
       const listener = jest.fn();
       observe(stateMachineRouter.query, 'activity', listener);
       stateMachineRouter.emit('slack', { activity: 'ping-pong' });
-      console.log(stateMachineRouter.query.activity);
       expect(listener).toHaveBeenCalled();
     });
 
@@ -145,22 +141,22 @@ describe('MobX state machine router', () => {
     // });
   });
 
-  // describe.only('react to url changes', () => {
-  //   it('should parse URL into query observables', () => {
-  //     stateMachineRouter.parseURL(
-  //       //console.log(
-  //       parseURL(
-  //         'http://localhost/work?activity=daydreaming&activity2=daydreaming2'
-  //       )
-  //     );
-  //     //);
-  //     // window.history.pushState(
-  //     //   {},
-  //     //   'Test Title',
-  //     //   '/work?activity=daydreaming&activity2=daydreaming2'
-  //     // );
-  //     //expect(stateMachineRouter.query.activity).toBe('sleeping');
-  //     expect(stateMachineRouter.state).toBe('WORK');
-  //   });
-  // });
+  describe('react to url changes', () => {
+    it('should parse URL into query observables', () => {
+      // stateMachineRouter.parseURL(
+      //   //console.log(
+      //   parseURL(
+      //     'http://localhost/work?activity=daydreaming&activity2=daydreaming2'
+      //   )
+      // );
+      // //);
+      // // window.history.pushState(
+      // //   {},
+      // //   'Test Title',
+      // //   '/work?activity=daydreaming&activity2=daydreaming2'
+      // // );
+      // //expect(stateMachineRouter.query.activity).toBe('sleeping');
+      // expect(stateMachineRouter.state).toBe('WORK');
+    });
+  });
 });
