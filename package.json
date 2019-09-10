@@ -1,6 +1,6 @@
 {
   "name": "mobx-state-machine-router",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "State Machine routing for Mobx",
   "author": "Anzor Bashkhaz",
   "email": "mansion.labs@gmail.com",
