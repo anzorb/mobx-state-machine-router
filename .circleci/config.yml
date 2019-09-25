@@ -71,7 +71,7 @@ jobs:
     steps:
       - run:
           name: Run tests with JUnit as reporter
-          command: pwd && ls -al
+          command: cd ../../ && pwd && ls -al
 
 workflows:
   version: 2
