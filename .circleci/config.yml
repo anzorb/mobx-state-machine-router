@@ -64,6 +64,15 @@ jobs:
           environment:
             JEST_JUNIT_OUTPUT: 'reports/junit/js-test-results.xml'
 
+  pwd:
+    docker: *docker
+    environment: *environment
+
+    steps:
+      - run:
+          name: Run tests with JUnit as reporter
+          command: pwd && ls -al
+
 workflows:
   version: 2
   commit:
@@ -72,6 +81,8 @@ workflows:
       - build:
           requires:
             - setup
+      - pwd:
+          requires:
       - coverage:
           requires:
             - build
