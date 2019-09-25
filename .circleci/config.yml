@@ -60,6 +60,7 @@ jobs:
       - run:
           name: Run tests with JUnit as reporter
           command: yarn run test:ci
+          path: '~/mobx-state-machine-router'
           environment:
             JEST_JUNIT_OUTPUT: 'reports/junit/js-test-results.xml'
 
@@ -72,6 +73,5 @@ workflows:
           requires:
             - setup
       - coverage:
-          path: '~/mobx-state-machine-router'
           requires:
             - build
