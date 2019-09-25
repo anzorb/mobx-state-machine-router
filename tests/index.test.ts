@@ -1,7 +1,10 @@
 import { createHashHistory } from 'history';
-import { observe } from 'mobx';
+import { observe, intercept } from 'mobx';
+import interceptAsync from 'mobx-async-intercept';
 import MobxStateMachineRouter from '../src';
 import URLPersistence from '../src/url.persistence';
+
+const ms = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 const states = {
   HOME: {
@@ -158,5 +161,91 @@ describe('with URL persistence', () => {
     stateMachineRouter.emit('goToWork');
     stateMachineRouter.emit('getFood', { coffee: true });
     expect(persistence._testURL).toBe('#/work%2Flunchroom?coffee=true');
+  });
+});
+
+describe('intercepting state changes', () => {
+  let stateMachineRouter;
+
+  let persistence;
+  beforeEach(() => {
+    persistence = new URLPersistence(createHashHistory());
+    stateMachineRouter = new MobxStateMachineRouter({
+      states,
+      startState: 'HOME',
+      query: {
+        activity: null
+      }
+    });
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+    stateMachineRouter = null;
+  });
+
+  it('should allow to intercept state change and override result state', () => {
+    intercept(stateMachineRouter, 'currentState', object => {
+      return { ...object, newValue: { ...object.newValue, name: 'HOME' } };
+    });
+    stateMachineRouter.emit('goToWork');
+    expect(stateMachineRouter.currentState.name).toBe('HOME');
+  });
+
+  it('should allow to intercept state change and stop state change', () => {
+    intercept(stateMachineRouter, 'currentState', object => {
+      return null;
+    });
+    stateMachineRouter.emit('goToWork');
+    expect(stateMachineRouter.currentState.name).toBe('HOME');
+  });
+
+  it('should allow to async intercept', done => {
+    interceptAsync(stateMachineRouter, 'currentState', object => {
+      return new Promise(resolve => {
+        setTimeout(() => {
+          resolve({
+            ...object,
+            newValue: { ...object.newValue, name: 'ERROR' }
+          });
+        }, 30);
+      });
+    });
+    stateMachineRouter.emit('goToWork', { activity: 'slack' });
+    setTimeout(() => {
+      expect(stateMachineRouter.currentState.name).toBe('HOME');
+    }, 28);
+    setTimeout(() => {
+      expect(stateMachineRouter.currentState.name).toBe('ERROR');
+      expect(stateMachineRouter.currentState.params.activity).toBe('slack');
+      done();
+    }, 30);
+  });
+
+  it('should allow to async intercept to update param', done => {
+    interceptAsync(stateMachineRouter, 'currentState', object => {
+      return new Promise(resolve => {
+        setTimeout(() => {
+          resolve({
+            ...object,
+            newValue: {
+              ...object.newValue,
+              params: { ...object.newValue.params, activity: 'working-hard' }
+            }
+          });
+        }, 30);
+      });
+    });
+    stateMachineRouter.emit('goToWork', { activity: 'slack' });
+    setTimeout(() => {
+      expect(stateMachineRouter.currentState.name).toBe('HOME');
+    }, 28);
+    setTimeout(() => {
+      expect(stateMachineRouter.currentState.name).toBe('WORK');
+      expect(stateMachineRouter.currentState.params.activity).toBe(
+        'working-hard'
+      );
+      done();
+    }, 30);
   });
 });

@@ -15,7 +15,6 @@
     "noUnusedLocals": true,
     "noUnusedParameters": false,
     "noImplicitAny": false,
-    "strict": true,
     "noImplicitThis": false,
     "experimentalDecorators": true,
     "lib": ["es6"]

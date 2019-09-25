@@ -4359,6 +4359,11 @@ mkpath@^1.0.0:
   resolved "https://registry.yarnpkg.com/mkpath/-/mkpath-1.0.0.tgz#ebb3a977e7af1c683ae6fda12b545a6ba6c5853d"
   integrity sha1-67Opd+evHGg65v2hK1Raa6bFhT0=
 
+mobx-async-intercept@^1.1.10:
+  version "1.1.10"
+  resolved "https://registry.yarnpkg.com/mobx-async-intercept/-/mobx-async-intercept-1.1.10.tgz#6aad1a5010c7e4d785ab6ecc094afd20b1e18b71"
+  integrity sha512-3r9ndDep1BcGlu+SO7hsVuSa1rLPbSo74bWVZRTPqPvk82viB9cuwxd2QUO9ml5yNlYZqDHnl7glhWKpEOoQog==
+
 mobx@^4.13.0:
   version "4.13.0"
   resolved "https://registry.yarnpkg.com/mobx/-/mobx-4.13.0.tgz#af4be9aac596c622a2bba4bfdaa67a5adb2ed90f"

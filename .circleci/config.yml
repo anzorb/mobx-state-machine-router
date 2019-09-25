@@ -72,5 +72,6 @@ workflows:
           requires:
             - setup
       - coverage:
+          working_dir: '.'
           requires:
             - build
