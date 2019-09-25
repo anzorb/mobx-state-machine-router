@@ -57,21 +57,14 @@ jobs:
     environment: *environment
 
     steps:
+      - checkout
+      - *restore_yarn_cache
+      - *run_yarn
       - run:
           name: Run tests with JUnit as reporter
           command: yarn run test:ci
-          path: '~/mobx-state-machine-router'
           environment:
             JEST_JUNIT_OUTPUT: 'reports/junit/js-test-results.xml'
-
-  pwd:
-    docker: *docker
-    environment: *environment
-
-    steps:
-      - run:
-          name: Run tests with JUnit as reporter
-          command: cd ../../ && pwd && ls -al
 
 workflows:
   version: 2
