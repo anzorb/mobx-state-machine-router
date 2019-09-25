@@ -1,32 +1,7 @@
 import { createHashHistory } from 'history';
 import { observe } from 'mobx';
 import MobxStateMachineRouter from '../src';
-
-// Object.defineProperty(global, 'window', {
-//   writable: true,
-//   value: global.window
-// });
-
-// const makeLocation = url => {
-//   const tokens = url.split('/');
-//   const pathname = tokens[1].split('?')[0];
-//   const query = tokens[1].split('?')[1]; // .split('&');
-//   const queryObj = {};
-//   for (let i = 0; i < query.length; i++) {
-//     const items = query[i].split('=');
-//     queryObj[items[0]] = items[1];
-//   }
-
-//   return {
-//     pathname,
-//     hash: pathname,
-//     href: url,
-//     search: `?${query}`
-//   };
-//   // while (done === false) {}
-//   // const search = tokens[3].split('?=')[1].split('&=');
-//   // console.log(queryObj);
-// };
+import URLPersistence from '../src/url.persistence';
 
 const states = {
   HOME: {
@@ -40,13 +15,13 @@ const states = {
     actions: {
       goHome: 'HOME',
       slack: 'WORK',
-      getFood: 'WORK.LUNCHROOM'
+      getFood: 'WORK/LUNCHROOM'
     },
     url: '/work'
   },
-  'WORK.LUNCHROOM': {
+  'WORK/LUNCHROOM': {
     actions: {
-      eat: 'WORK.LUNCHROOM',
+      eat: 'WORK/LUNCHROOM',
       backToWork: 'WORK',
       tiredAfterLunchGoHome: 'HOME'
     },
@@ -62,15 +37,13 @@ describe('MobX state machine router', () => {
       startState: 'HOME',
       query: {
         activity: null
-      },
-      history: createHashHistory()
+      }
     });
   });
 
   afterEach(() => {
     jest.clearAllMocks();
     stateMachineRouter = null;
-    window.location.href = '/';
   });
 
   describe('basics', () => {
@@ -81,28 +54,29 @@ describe('MobX state machine router', () => {
     it('should do basic routing', () => {
       stateMachineRouter.emit('goToWork');
       expect(stateMachineRouter.state).toBe('WORK');
-      expect(window.location.hash).toBe('#/work');
     });
 
     it('should update query params', () => {
       stateMachineRouter.emit('goToWork');
       stateMachineRouter.emit('slack', { activity: 'daydreaming' });
       expect(stateMachineRouter.state).toBe('WORK');
-      expect(window.location.hash).toBe('#/work?activity=daydreaming');
+      expect(stateMachineRouter.currentState.params.activity).toEqual(
+        'daydreaming'
+      );
     });
 
     it('should nullify query params', () => {
       stateMachineRouter.emit('goToWork');
       stateMachineRouter.emit('slack', { activity: null });
       expect(stateMachineRouter.state).toBe('WORK');
-      expect(window.location.hash).toBe('#/work');
+      expect(stateMachineRouter.currentState.params.activity).toEqual(null);
     });
 
     it('should support child states', () => {
       stateMachineRouter.emit('goToWork');
-      stateMachineRouter.emit('getFood');
-      expect(stateMachineRouter.state).toBe('WORK.LUNCHROOM');
-      expect(window.location.hash).toBe('#/work/lunchroom');
+      stateMachineRouter.emit('getFood', { coffee: true });
+      expect(stateMachineRouter.state).toBe('WORK/LUNCHROOM');
+      expect(stateMachineRouter.currentState.params.coffee).toEqual(true);
     });
   });
 
@@ -110,16 +84,16 @@ describe('MobX state machine router', () => {
     it('should allow us to listen to specific query changes', () => {
       stateMachineRouter.emit('goToWork');
       const listener = jest.fn();
-      observe(stateMachineRouter.query, 'activity', listener);
+      observe(stateMachineRouter.currentState.params, 'activity', listener);
       stateMachineRouter.emit('slack', { activity: 'ping-pong' });
       expect(listener).toHaveBeenCalled();
     });
 
     it('should not change state if resulting state does not exist', () => {
       const listener = jest.fn();
-      observe(stateMachineRouter.query, 'activity', listener);
+      observe(stateMachineRouter.currentState.params, 'activity', listener);
       stateMachineRouter.emit('slack', { activity: 'ping-pong' });
-      expect(stateMachineRouter.query.activity).toBe(null);
+      expect(stateMachineRouter.currentState.params.activity).toBe(null);
       expect(listener).not.toHaveBeenCalled();
     });
 
@@ -127,36 +101,60 @@ describe('MobX state machine router', () => {
       const listener = jest.fn();
       stateMachineRouter.emit('goToWork');
       stateMachineRouter.emit('slack', { mood: 'need-coffee' });
-      observe(stateMachineRouter.query, 'mood', listener);
+      observe(stateMachineRouter.currentState.params, 'mood', listener);
       stateMachineRouter.emit('slack', { mood: 'so-many-jitters' });
       expect(listener).toHaveBeenCalled();
     });
 
-    // it('should allow listening to the whole query for changes', () => {
-    //   stateMachineRouter.emit('goToWork');
-    //   const listener = jest.fn();
-    //   observe(stateMachineRouter, 'query', listener);
-    //   stateMachineRouter.emit('slack', { activity: 'sleeping' });
-    //   expect(listener).toHaveBeenCalled();
-    // });
+    it('should allow listening to the whole query for changes', () => {
+      stateMachineRouter.emit('goToWork');
+      const listener = jest.fn();
+      observe(stateMachineRouter, 'currentState', listener);
+      stateMachineRouter.emit('slack', { activity: 'sleeping' });
+      expect(listener).toHaveBeenCalled();
+    });
+  });
+});
+
+describe('with URL persistence', () => {
+  let stateMachineRouter, persistence;
+  beforeEach(() => {
+    persistence = new URLPersistence(createHashHistory());
+    stateMachineRouter = new MobxStateMachineRouter({
+      states,
+      startState: 'HOME',
+      query: {
+        activity: null
+      },
+      persistence
+    });
   });
 
-  describe('react to url changes', () => {
-    it('should parse URL into query observables', () => {
-      // stateMachineRouter.parseURL(
-      //   //console.log(
-      //   parseURL(
-      //     'http://localhost/work?activity=daydreaming&activity2=daydreaming2'
-      //   )
-      // );
-      // //);
-      // // window.history.pushState(
-      // //   {},
-      // //   'Test Title',
-      // //   '/work?activity=daydreaming&activity2=daydreaming2'
-      // // );
-      // //expect(stateMachineRouter.query.activity).toBe('sleeping');
-      // expect(stateMachineRouter.state).toBe('WORK');
-    });
+  afterEach(() => {
+    jest.clearAllMocks();
+    stateMachineRouter = null;
+  });
+
+  it('should do basic routing', () => {
+    stateMachineRouter.emit('goToWork');
+    expect(persistence._testURL).toBe('#/work');
+  });
+
+  it('should update query params', () => {
+    stateMachineRouter.emit('goToWork');
+    stateMachineRouter.emit('slack', { activity: 'daydreaming' });
+    expect(persistence._testURL).toBe('#/work?activity=daydreaming');
+  });
+
+  it('should nullify query params', () => {
+    stateMachineRouter.emit('goToWork');
+    stateMachineRouter.emit('slack', { activity: null });
+    expect(persistence._testURL).toBe('#/work');
+  });
+
+  it('should support child states', () => {
+    stateMachineRouter.emit('goToWork');
+    stateMachineRouter.emit('getFood', { coffee: true });
+    expect(persistence._testURL).toBe('#/work%2Flunchroom?coffee=true');
   });
 });

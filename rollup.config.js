@@ -5,8 +5,10 @@ import resolve from 'rollup-plugin-node-resolve';
 import json from 'rollup-plugin-json';
 import pkg from './package.json';
 
+const extensions = ['.js', '.jsx', '.ts'];
+
 export default {
-  input: 'src/index.js',
+  input: 'src/index.ts',
   output: [
     {
       file: pkg.main,
@@ -22,8 +24,12 @@ export default {
   plugins: [
     json(),
     external(),
-    resolve(),
-    babel(),
+    resolve({
+      extensions
+    }),
+    babel({
+      extensions
+    }),
     commonjs()
     //terser()
   ]

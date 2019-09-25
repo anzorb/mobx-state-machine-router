@@ -40,6 +40,7 @@
     "@babel/plugin-proposal-private-methods": "^7.6.0",
     "@babel/plugin-syntax-dynamic-import": "^7.2.0",
     "@babel/preset-env": "^7.6.0",
+    "@babel/preset-typescript": "^7.6.0",
     "babel-core": "^7.0.0-bridge.0",
     "babel-eslint": "^10.0.2",
     "babel-jest": "^24.8.0",
@@ -78,6 +79,7 @@
     "rollup-plugin-string": "^3.0.0",
     "rollup-plugin-terser": "^5.1.1",
     "rollup-plugin-url": "^2.2.2",
+    "ts-jest": "^24.1.0",
     "whatwg-url": "^7.0.0"
   },
   "files": [
@@ -127,8 +129,15 @@
     "mobx": "^4.12.0"
   },
   "dependencies": {
+    "@types/history": "^4.7.3",
+    "@types/jest": "^24.0.18",
+    "@types/node": "^12.7.5",
+    "@types/query-string": "^6.3.0",
+    "@types/react": "^16.9.2",
+    "@types/react-dom": "^16.9.0",
     "history": "^4.9.0",
     "query-string": "^6.8.3",
+    "typescript": "^3.6.3",
     "user": "0.0.0"
   }
 }
