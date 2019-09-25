@@ -72,6 +72,6 @@ workflows:
           requires:
             - setup
       - coverage:
-          working_dir: '~/mobx-state-machine-router'
+          path: '~/mobx-state-machine-router'
           requires:
             - build
