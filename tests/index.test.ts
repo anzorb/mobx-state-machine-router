@@ -117,7 +117,9 @@ describe('MobX state machine router', () => {
 });
 
 describe('with URL persistence', () => {
-  let stateMachineRouter, persistence;
+  let stateMachineRouter;
+
+  let persistence;
   beforeEach(() => {
     persistence = new URLPersistence(createHashHistory());
     stateMachineRouter = new MobxStateMachineRouter({

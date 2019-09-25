@@ -38,12 +38,17 @@ interface CurrentState {
 class MobxStateMachineRouter {
   @observable currentState: CurrentState = <CurrentState>{
     name: '',
-    params: {}
+    params: <object>{}
   };
+
   persistence: Persistence = <Persistence>{};
+
   @observable.ref query: object = {};
+
   _startState: string = 'HOME';
+
   _states: States = <States>{};
+
   _reverseRoutes: ReverseRoutes = <ReverseRoutes>{};
 
   @computed
@@ -92,6 +97,7 @@ class MobxStateMachineRouter {
         name: newState,
         params: this.currentState.params
       });
+
       // TODO: handle error state
       return;
     }
@@ -144,11 +150,11 @@ class MobxStateMachineRouter {
         const { name } = this.persistence.currentState;
         const route = this._reverseRoutes[name];
         if (route == null) {
-          console.warn(
-            'No reverse route found for ',
-            name,
-            this._reverseRoutes
-          );
+          // console.warn(
+          //   'No reverse route found for ',
+          //   name,
+          //   this._reverseRoutes
+          // );
         } else {
           this._setCurrentState(this.persistence.currentState);
         }

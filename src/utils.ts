@@ -1,6 +1,6 @@
 import { States } from './index';
 
-export const sanitize = object => {
+export const sanitize = (object): object => {
   const keys = Object.keys(object);
   const result = {};
   keys.forEach(key => {
@@ -18,12 +18,6 @@ export const transition = (
   actionName: string
 ): string => {
   const result = states[curState].actions[actionName];
-
-  if (result == null) {
-    console.warn('no state for action ', curState, actionName);
-  } else if (curState !== result) {
-    //console.log('STATE MACHINE: ', curState, actionName, result);
-  }
 
   return result;
 };

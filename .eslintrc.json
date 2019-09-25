@@ -1,6 +1,10 @@
 {
-  "parser": "babel-eslint",
-  "extends": ["airbnb", "plugin:react/recommended", "prettier"],
+  "parser": "@typescript-eslint/parser",
+  "extends": [
+    "plugin:react/recommended",
+    "airbnb",
+    "plugin:prettier/recommended"
+  ],
   "settings": {
     "react": {
       "createClass": "createReactClass",
@@ -12,7 +16,7 @@
   "plugins": ["jest", "react", "flowtype", "react-hooks", "prettier"],
   "parserOptions": {
     "sourceType": "module",
-    "ecmaVersion": 7,
+    "ecmaVersion": 2018,
     "ecmaFeatures": {
       "jsx": true
     }
