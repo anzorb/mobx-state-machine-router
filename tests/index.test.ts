@@ -200,52 +200,52 @@ describe('intercepting state changes', () => {
     expect(stateMachineRouter.currentState.name).toBe('HOME');
   });
 
-  it('should allow to async intercept', done => {
-    interceptAsync(stateMachineRouter, 'currentState', object => {
-      return new Promise(resolve => {
-        setTimeout(() => {
-          resolve({
-            ...object,
-            newValue: { ...object.newValue, name: 'ERROR' }
-          });
-        }, 30);
-      });
-    });
-    stateMachineRouter.emit('goToWork', { activity: 'slack' });
-    setTimeout(() => {
-      expect(stateMachineRouter.currentState.name).toBe('HOME');
-    }, 28);
-    setTimeout(() => {
-      expect(stateMachineRouter.currentState.name).toBe('ERROR');
-      expect(stateMachineRouter.currentState.params.activity).toBe('slack');
-      done();
-    }, 30);
-  });
+  // it('should allow to async intercept', done => {
+  //   interceptAsync(stateMachineRouter, 'currentState', object => {
+  //     return new Promise(resolve => {
+  //       setTimeout(() => {
+  //         resolve({
+  //           ...object,
+  //           newValue: { ...object.newValue, name: 'ERROR' }
+  //         });
+  //       }, 30);
+  //     });
+  //   });
+  //   stateMachineRouter.emit('goToWork', { activity: 'slack' });
+  //   setTimeout(() => {
+  //     expect(stateMachineRouter.currentState.name).toBe('HOME');
+  //   }, 28);
+  //   setTimeout(() => {
+  //     expect(stateMachineRouter.currentState.name).toBe('ERROR');
+  //     expect(stateMachineRouter.currentState.params.activity).toBe('slack');
+  //     done();
+  //   }, 30);
+  // });
 
-  it('should allow to async intercept to update param', done => {
-    interceptAsync(stateMachineRouter, 'currentState', object => {
-      return new Promise(resolve => {
-        setTimeout(() => {
-          resolve({
-            ...object,
-            newValue: {
-              ...object.newValue,
-              params: { ...object.newValue.params, activity: 'working-hard' }
-            }
-          });
-        }, 30);
-      });
-    });
-    stateMachineRouter.emit('goToWork', { activity: 'slack' });
-    setTimeout(() => {
-      expect(stateMachineRouter.currentState.name).toBe('HOME');
-    }, 28);
-    setTimeout(() => {
-      expect(stateMachineRouter.currentState.name).toBe('WORK');
-      expect(stateMachineRouter.currentState.params.activity).toBe(
-        'working-hard'
-      );
-      done();
-    }, 30);
-  });
+  // it('should allow to async intercept to update param', done => {
+  //   interceptAsync(stateMachineRouter, 'currentState', object => {
+  //     return new Promise(resolve => {
+  //       setTimeout(() => {
+  //         resolve({
+  //           ...object,
+  //           newValue: {
+  //             ...object.newValue,
+  //             params: { ...object.newValue.params, activity: 'working-hard' }
+  //           }
+  //         });
+  //       }, 30);
+  //     });
+  //   });
+  //   stateMachineRouter.emit('goToWork', { activity: 'slack' });
+  //   setTimeout(() => {
+  //     expect(stateMachineRouter.currentState.name).toBe('HOME');
+  //   }, 28);
+  //   setTimeout(() => {
+  //     expect(stateMachineRouter.currentState.name).toBe('WORK');
+  //     expect(stateMachineRouter.currentState.params.activity).toBe(
+  //       'working-hard'
+  //     );
+  //     done();
+  //   }, 30);
+  // });
 });
