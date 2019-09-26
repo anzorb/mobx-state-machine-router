@@ -29,7 +29,7 @@
     "release": "np publish",
     "predeploy": "npm run styleguide:build",
     "deploy": "gh-pages -d styleguide",
-    "test:ci": "jest --ci --reporters=default --reporters=jest-junit"
+    "test:ci": "jest --ci --collectCoverage=true"
   },
   "devDependencies": {
     "@babel/core": "^7.5.5",
