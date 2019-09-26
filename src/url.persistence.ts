@@ -1,7 +1,9 @@
-import * as queryString from 'query-string';
 import { createHashHistory, History, Location } from 'history';
 import { computed, action, observable } from 'mobx';
 import { sanitize } from './utils';
+import { States } from '.';
+
+const { parse, stringify } = require('query-string');
 
 export interface CurrentState {
   name: string;
@@ -28,20 +30,20 @@ class URLPersistence {
 
   @computed
   get currentState(): CurrentState {
-    const params = queryString.parse(this._location.search);
+    const params = parse(this._location.search);
     const name = decodeURIComponent(this._location.pathname);
 
     return { name, params };
   }
 
-  write(currentState: CurrentState) {
-    const name = encodeURIComponent(currentState.name.toLowerCase());
+  write(currentState: CurrentState, states: States) {
+    const name = states[currentState.name].url;
     const params = sanitize(currentState.params);
-    const paramsString = queryString.stringify(params);
+    const paramsString = stringify(params);
 
     const toURL = `${name}${paramsString !== '' ? `?${paramsString}` : ''}`;
     this._history.push(toURL);
-    this._testURL = `#/${toURL}`;
+    this._testURL = `#${toURL}`;
   }
 }
 

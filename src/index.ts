@@ -43,7 +43,7 @@ interface CurrentState {
 }
 
 class MobxStateMachineRouter {
-  @observable currentState: CurrentState = <CurrentState>{
+  @observable.ref currentState: CurrentState = <CurrentState>{
     name: '',
     params: <object>{}
   };
@@ -65,13 +65,29 @@ class MobxStateMachineRouter {
   _setCurrentState(newState: CurrentState) {
     const _newStateName = newState.name;
     if (typeof this._states[_newStateName] !== 'undefined') {
-      // validate that new state name exists in state map
-      // if persistence exists, write to it
-      this._setParams({ ...this.currentState.params, ...newState.params });
-      this.currentState = {
-        name: _newStateName,
-        params: this.currentState.params
-      };
+      // // update/remove existing props
+      for (const key in toJS(this.currentState.params)) {
+        if (newState.params[key] == null) {
+          this.currentState.params[key] = undefined;
+        } else if (typeof newState.params[key] !== 'undefined') {
+          this.currentState.params[key] = newState.params[key];
+        }
+        delete newState.params[key];
+      }
+      // add new props
+      for (const key in newState.params) {
+        extendObservable(this.currentState.params, {
+          [key]: newState.params[key]
+        });
+      }
+
+      // only update the whole object if a new State exists
+      if (this.currentState.name !== _newStateName) {
+        this.currentState = {
+          name: _newStateName,
+          params: this.currentState.params
+        };
+      }
     } else if (this.currentState.name === '') {
       this.currentState = {
         name: Object.keys(this._states)[0],
@@ -102,10 +118,13 @@ class MobxStateMachineRouter {
     if (newState != null) {
       // if a persistence layer exists, write to it, and expect to resolve internal state as a result
       if (typeof this.persistence.write === 'function') {
-        this.persistence.write({
-          name: newState,
-          params: { ...this.currentState.params, ...query }
-        });
+        this.persistence.write(
+          {
+            name: newState,
+            params: { ...this.currentState.params, ...query }
+          },
+          this._states
+        );
       } else {
         this._setCurrentState({
           name: newState,
@@ -128,9 +147,6 @@ class MobxStateMachineRouter {
     }
     this.emit = this.emit.bind(this);
 
-    // set initial query
-    this._setParams(query);
-
     for (const i in states) {
       const route = states[i].url;
       this._reverseRoutes[route.toLowerCase()] = i;
@@ -147,8 +163,9 @@ class MobxStateMachineRouter {
 
     this._setCurrentState({
       name: startState,
-      params: this.currentState.params
+      params: query
     });
   }
 }
+export { default as URLPersistence } from './url.persistence';
 export default MobxStateMachineRouter;

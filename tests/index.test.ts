@@ -114,7 +114,9 @@ describe('MobX state machine router', () => {
       stateMachineRouter.emit('goToWork');
       stateMachineRouter.emit('slack', { activity: null });
       expect(stateMachineRouter.state).toBe('WORK');
-      expect(stateMachineRouter.currentState.params.activity).toEqual(null);
+      expect(stateMachineRouter.currentState.params.activity).toEqual(
+        undefined
+      );
     });
 
     it('should support child states', () => {
@@ -152,11 +154,25 @@ describe('MobX state machine router', () => {
     });
 
     it('should allow listening to the whole query for changes', () => {
-      stateMachineRouter.emit('goToWork');
       const listener = jest.fn();
       observe(stateMachineRouter, 'currentState', listener);
-      stateMachineRouter.emit('slack', { activity: 'sleeping' });
+      stateMachineRouter.emit('goToWork');
       expect(listener).toHaveBeenCalled();
+    });
+
+    it('should emit correct updates', () => {
+      stateMachineRouter.emit('goToWork');
+      const listener = jest.fn();
+      const listener2 = jest.fn();
+      const listener3 = jest.fn();
+      // subscribe to the whole object
+      observe(stateMachineRouter, 'currentState', listener);
+      observe(stateMachineRouter.currentState.params, 'activity', listener2);
+      observe(stateMachineRouter.currentState.params, 'activity', listener3);
+      stateMachineRouter.emit('slack', { activity: 'sleeping' });
+      expect(listener).not.toHaveBeenCalled();
+      expect(listener2).toHaveBeenCalled();
+      expect(listener3).toHaveBeenCalled();
     });
   });
 });
@@ -198,6 +214,16 @@ describe('with URL persistence', () => {
     expect(stateMachineRouter.currentState.name).toBe('HOME');
   });
 
+  it('should allow resetting query params', () => {
+    stateMachineRouter.emit('goToWork');
+    stateMachineRouter.emit('slack', { activity: 'daydreaming' });
+    expect(stateMachineRouter.currentState.params.activity).toBe('daydreaming');
+    expect(persistence._testURL).toBe('#/work?activity=daydreaming');
+    stateMachineRouter.emit('slack', { activity: null });
+    expect(persistence._testURL).toBe('#/work');
+    expect(stateMachineRouter.currentState.params.activity).toBe(undefined);
+  });
+
   it('should update query params', () => {
     stateMachineRouter.emit('goToWork');
     stateMachineRouter.emit('slack', { activity: 'daydreaming' });
@@ -213,7 +239,7 @@ describe('with URL persistence', () => {
   it('should support child states', () => {
     stateMachineRouter.emit('goToWork');
     stateMachineRouter.emit('getFood', { coffee: true });
-    expect(persistence._testURL).toBe('#/work%2Flunchroom?coffee=true');
+    expect(persistence._testURL).toBe('#/work/lunchroom?coffee=true');
   });
 
   it('should listen to persistence layer for changes', () => {

@@ -23,13 +23,20 @@ describe('URL Persistence', () => {
   });
 
   it('should write to URL correctly', () => {
-    persistence.write({
-      name: 'new',
-      params: {
-        hola: 'amigos',
-        this: 'is'
+    persistence.write(
+      {
+        name: 'new',
+        params: {
+          hola: 'amigos',
+          this: 'is'
+        }
+      },
+      {
+        new: {
+          url: '/new'
+        }
       }
-    });
+    );
     expect(persistence._testURL).toEqual('#/new?hola=amigos&this=is');
   });
 

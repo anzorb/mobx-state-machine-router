@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuites name="jest tests" tests="25" failures="0" time="1.81">
-  <testsuite name="URL Persistence" errors="0" failures="0" skipped="0" timestamp="2019-09-26T18:42:24" time="0.579" tests="3">
+<testsuites name="jest tests" tests="27" failures="0" time="2.06">
+  <testsuite name="URL Persistence" errors="0" failures="0" skipped="0" timestamp="2019-09-26T20:33:53" time="0.622" tests="3">
     <testcase classname="URL Persistence should parse URL correctly" name="URL Persistence should parse URL correctly" time="0.004">
     </testcase>
-    <testcase classname="URL Persistence should write to URL correctly" name="URL Persistence should write to URL correctly" time="0.001">
+    <testcase classname="URL Persistence should write to URL correctly" name="URL Persistence should write to URL correctly" time="0.002">
     </testcase>
-    <testcase classname="URL Persistence should allow to observe for currentState changes" name="URL Persistence should allow to observe for currentState changes" time="0.002">
+    <testcase classname="URL Persistence should allow to observe for currentState changes" name="URL Persistence should allow to observe for currentState changes" time="0.001">
     </testcase>
   </testsuite>
-  <testsuite name="init" errors="0" failures="0" skipped="0" timestamp="2019-09-26T18:42:24" time="0.983" tests="22">
-    <testcase classname="init should allow to create instance with different startStates + validation" name="init should allow to create instance with different startStates + validation" time="0.006">
+  <testsuite name="init" errors="0" failures="0" skipped="0" timestamp="2019-09-26T20:33:53" time="1.047" tests="24">
+    <testcase classname="init should allow to create instance with different startStates + validation" name="init should allow to create instance with different startStates + validation" time="0.005">
     </testcase>
     <testcase classname="init should allow to create instance with empty query" name="init should allow to create instance with empty query" time="0.001">
     </testcase>
-    <testcase classname="init should allow to create instance with queries and setup observables for them" name="init should allow to create instance with queries and setup observables for them" time="0.002">
+    <testcase classname="init should allow to create instance with queries and setup observables for them" name="init should allow to create instance with queries and setup observables for them" time="0.003">
     </testcase>
     <testcase classname="MobX state machine router basics should init" name="MobX state machine router basics should init" time="0.001">
     </testcase>
@@ -23,7 +23,7 @@
     </testcase>
     <testcase classname="MobX state machine router basics should nullify query params" name="MobX state machine router basics should nullify query params" time="0.001">
     </testcase>
-    <testcase classname="MobX state machine router basics should support child states" name="MobX state machine router basics should support child states" time="0.001">
+    <testcase classname="MobX state machine router basics should support child states" name="MobX state machine router basics should support child states" time="0">
     </testcase>
     <testcase classname="MobX state machine router reactivity should allow us to listen to specific query changes" name="MobX state machine router reactivity should allow us to listen to specific query changes" time="0.001">
     </testcase>
@@ -31,15 +31,19 @@
     </testcase>
     <testcase classname="MobX state machine router reactivity should allow adding dynamic query params at runtime" name="MobX state machine router reactivity should allow adding dynamic query params at runtime" time="0.001">
     </testcase>
-    <testcase classname="MobX state machine router reactivity should allow listening to the whole query for changes" name="MobX state machine router reactivity should allow listening to the whole query for changes" time="0.001">
+    <testcase classname="MobX state machine router reactivity should allow listening to the whole query for changes" name="MobX state machine router reactivity should allow listening to the whole query for changes" time="0">
     </testcase>
-    <testcase classname="with URL persistence should do basic routing" name="with URL persistence should do basic routing" time="0.01">
+    <testcase classname="MobX state machine router reactivity should emit correct updates" name="MobX state machine router reactivity should emit correct updates" time="0.001">
     </testcase>
-    <testcase classname="with URL persistence should ignore unknown routes and ignore state change" name="with URL persistence should ignore unknown routes and ignore state change" time="0.002">
+    <testcase classname="with URL persistence should do basic routing" name="with URL persistence should do basic routing" time="0.011">
     </testcase>
-    <testcase classname="with URL persistence should update query params" name="with URL persistence should update query params" time="0.002">
+    <testcase classname="with URL persistence should ignore unknown routes and ignore state change" name="with URL persistence should ignore unknown routes and ignore state change" time="0.001">
     </testcase>
-    <testcase classname="with URL persistence should nullify query params" name="with URL persistence should nullify query params" time="0.002">
+    <testcase classname="with URL persistence should allow resetting query params" name="with URL persistence should allow resetting query params" time="0.004">
+    </testcase>
+    <testcase classname="with URL persistence should update query params" name="with URL persistence should update query params" time="0.001">
+    </testcase>
+    <testcase classname="with URL persistence should nullify query params" name="with URL persistence should nullify query params" time="0">
     </testcase>
     <testcase classname="with URL persistence should support child states" name="with URL persistence should support child states" time="0.001">
     </testcase>
@@ -47,11 +51,11 @@
     </testcase>
     <testcase classname="intercepting state changes should allow to intercept state change and override result state" name="intercepting state changes should allow to intercept state change and override result state" time="0.001">
     </testcase>
-    <testcase classname="intercepting state changes should allow to intercept state change and stop state change" name="intercepting state changes should allow to intercept state change and stop state change" time="0.001">
+    <testcase classname="intercepting state changes should allow to intercept state change and stop state change" name="intercepting state changes should allow to intercept state change and stop state change" time="0">
     </testcase>
-    <testcase classname="intercepting state changes should allow to async intercept" name="intercepting state changes should allow to async intercept" time="0.004">
+    <testcase classname="intercepting state changes should allow to async intercept" name="intercepting state changes should allow to async intercept" time="0.005">
     </testcase>
-    <testcase classname="intercepting state changes should allow to async intercept to update param" name="intercepting state changes should allow to async intercept to update param" time="0.006">
+    <testcase classname="intercepting state changes should allow to async intercept to update param" name="intercepting state changes should allow to async intercept to update param" time="0.004">
     </testcase>
   </testsuite>
 </testsuites>
