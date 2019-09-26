@@ -4,7 +4,7 @@ orbs:
 
 aliases:
   - &docker
-    - image: circleci/openjdk:8-jdk-node-browsers
+    - image: circleci/node:latest
 
   - &environment
     TZ: /usr/share/zoneinfo/America/Los_Angeles
