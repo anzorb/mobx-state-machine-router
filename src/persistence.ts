@@ -3,13 +3,13 @@ export interface CurrentState {
   params: object;
 }
 
-interface WriteFn {
+export interface WriteFn {
   (currentState: CurrentState);
 }
 
 interface ListenFnParam {}
 
-interface ListenFn {
+export interface ListenFn {
   (myArgument: ListenFnParam): CurrentState;
 }
 

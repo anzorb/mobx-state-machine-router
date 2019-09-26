@@ -13,7 +13,14 @@
     },
     "propWrapperFunctions": ["forbidExtraProps"]
   },
-  "plugins": ["jest", "react", "flowtype", "react-hooks", "prettier"],
+  "plugins": [
+    "jest",
+    "react",
+    "@typescript-eslint/eslint-plugin",
+    "flowtype",
+    "react-hooks",
+    "prettier"
+  ],
   "parserOptions": {
     "sourceType": "module",
     "ecmaVersion": 2018,

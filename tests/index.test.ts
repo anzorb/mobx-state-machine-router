@@ -32,6 +32,48 @@ const states = {
   }
 };
 
+describe('init', () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('should allow to create instance with different startStates + validation', () => {
+    const stateMachineRouter = new MobxStateMachineRouter({
+      states,
+      startState: 'AAAH',
+      query: {
+        activity: null
+      }
+    });
+    expect(stateMachineRouter.currentState.name).not.toBe('AAAH');
+    expect(stateMachineRouter.currentState.name).toBe('HOME');
+  });
+
+  it('should allow to create instance with empty query', () => {
+    const stateMachineRouter = new MobxStateMachineRouter({
+      states,
+      startState: 'HOME',
+      query: {}
+    });
+    expect(stateMachineRouter.currentState.params.activity).toBe(undefined);
+  });
+
+  it('should allow to create instance with queries and setup observables for them', () => {
+    const stateMachineRouter = new MobxStateMachineRouter({
+      states,
+      startState: 'HOME',
+      query: {
+        activity: 'biking'
+      }
+    });
+    const spy = jest.fn();
+    observe(stateMachineRouter.currentState.params, 'activity', spy);
+    expect(stateMachineRouter.currentState.params.activity).toBe('biking');
+    stateMachineRouter.emit('goToWork', { activity: 'walking' });
+    expect(spy).toHaveBeenCalled();
+  });
+});
+
 describe('MobX state machine router', () => {
   let stateMachineRouter;
   beforeEach(() => {
@@ -145,6 +187,17 @@ describe('with URL persistence', () => {
     expect(persistence._testURL).toBe('#/work');
   });
 
+  it('should ignore unknown routes and ignore state change', () => {
+    const spy = jest.fn();
+    observe(persistence, 'currentState', spy);
+    persistence._updateLocation({
+      pathname: '/somewhere',
+      search: '?what=world&where=bla'
+    });
+    expect(spy).toHaveBeenCalled();
+    expect(stateMachineRouter.currentState.name).toBe('HOME');
+  });
+
   it('should update query params', () => {
     stateMachineRouter.emit('goToWork');
     stateMachineRouter.emit('slack', { activity: 'daydreaming' });
@@ -162,11 +215,21 @@ describe('with URL persistence', () => {
     stateMachineRouter.emit('getFood', { coffee: true });
     expect(persistence._testURL).toBe('#/work%2Flunchroom?coffee=true');
   });
+
+  it('should listen to persistence layer for changes', () => {
+    const spy = jest.fn();
+    observe(persistence, 'currentState', spy);
+    persistence._updateLocation({
+      pathname: '/work',
+      search: '?what=world&where=bla'
+    });
+    expect(spy).toHaveBeenCalled();
+    expect(stateMachineRouter.currentState.name).toBe('WORK');
+  });
 });
 
 describe('intercepting state changes', () => {
   let stateMachineRouter;
-
   let persistence;
   beforeEach(() => {
     persistence = new URLPersistence(createHashHistory());
@@ -200,52 +263,52 @@ describe('intercepting state changes', () => {
     expect(stateMachineRouter.currentState.name).toBe('HOME');
   });
 
-  // it('should allow to async intercept', done => {
-  //   interceptAsync(stateMachineRouter, 'currentState', object => {
-  //     return new Promise(resolve => {
-  //       setTimeout(() => {
-  //         resolve({
-  //           ...object,
-  //           newValue: { ...object.newValue, name: 'ERROR' }
-  //         });
-  //       }, 30);
-  //     });
-  //   });
-  //   stateMachineRouter.emit('goToWork', { activity: 'slack' });
-  //   setTimeout(() => {
-  //     expect(stateMachineRouter.currentState.name).toBe('HOME');
-  //   }, 28);
-  //   setTimeout(() => {
-  //     expect(stateMachineRouter.currentState.name).toBe('ERROR');
-  //     expect(stateMachineRouter.currentState.params.activity).toBe('slack');
-  //     done();
-  //   }, 30);
-  // });
+  it('should allow to async intercept', done => {
+    interceptAsync(stateMachineRouter, 'currentState', object => {
+      return new Promise(resolve => {
+        setTimeout(() => {
+          resolve({
+            ...object,
+            newValue: { ...object.newValue, name: 'ERROR' }
+          });
+        }, 30);
+      });
+    });
+    stateMachineRouter.emit('goToWork', { activity: 'slack' });
+    setTimeout(() => {
+      expect(stateMachineRouter.currentState.name).toBe('HOME');
+    }, 28);
+    setTimeout(() => {
+      expect(stateMachineRouter.currentState.name).toBe('ERROR');
+      expect(stateMachineRouter.currentState.params.activity).toBe('slack');
+      done();
+    }, 30);
+  });
 
-  // it('should allow to async intercept to update param', done => {
-  //   interceptAsync(stateMachineRouter, 'currentState', object => {
-  //     return new Promise(resolve => {
-  //       setTimeout(() => {
-  //         resolve({
-  //           ...object,
-  //           newValue: {
-  //             ...object.newValue,
-  //             params: { ...object.newValue.params, activity: 'working-hard' }
-  //           }
-  //         });
-  //       }, 30);
-  //     });
-  //   });
-  //   stateMachineRouter.emit('goToWork', { activity: 'slack' });
-  //   setTimeout(() => {
-  //     expect(stateMachineRouter.currentState.name).toBe('HOME');
-  //   }, 28);
-  //   setTimeout(() => {
-  //     expect(stateMachineRouter.currentState.name).toBe('WORK');
-  //     expect(stateMachineRouter.currentState.params.activity).toBe(
-  //       'working-hard'
-  //     );
-  //     done();
-  //   }, 30);
-  // });
+  it('should allow to async intercept to update param', done => {
+    interceptAsync(stateMachineRouter, 'currentState', object => {
+      return new Promise(resolve => {
+        setTimeout(() => {
+          resolve({
+            ...object,
+            newValue: {
+              ...object.newValue,
+              params: { ...object.newValue.params, activity: 'working-hard' }
+            }
+          });
+        }, 30);
+      });
+    });
+    stateMachineRouter.emit('goToWork', { activity: 'slack' });
+    setTimeout(() => {
+      expect(stateMachineRouter.currentState.name).toBe('HOME');
+    }, 28);
+    setTimeout(() => {
+      expect(stateMachineRouter.currentState.name).toBe('WORK');
+      expect(stateMachineRouter.currentState.params.activity).toBe(
+        'working-hard'
+      );
+      done();
+    }, 30);
+  });
 });

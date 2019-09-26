@@ -1,4 +1,11 @@
-import { observable, action, computed, extendObservable, toJS } from 'mobx';
+import {
+  observable,
+  action,
+  computed,
+  extendObservable,
+  toJS,
+  observe
+} from 'mobx';
 import { transition } from './utils';
 import { Persistence } from './persistence';
 
@@ -43,8 +50,6 @@ class MobxStateMachineRouter {
 
   persistence: Persistence = <Persistence>{};
 
-  @observable.ref query: object = {};
-
   _startState: string = 'HOME';
 
   _states: States = <States>{};
@@ -52,23 +57,26 @@ class MobxStateMachineRouter {
   _reverseRoutes: ReverseRoutes = <ReverseRoutes>{};
 
   @computed
-  get state() {
+  get state(): string {
     return this.currentState.name;
   }
 
   @action.bound
   _setCurrentState(newState: CurrentState) {
-    let _newStateName = newState.name;
-
-    // validate that new state name exists in state map
-    if (typeof this._states[_newStateName] === 'undefined') {
-      _newStateName = this._startState;
-    }
-
-    this.currentState = { ...newState, name: _newStateName };
-    if (typeof this.persistence.write === 'function') {
-      const { name, params } = this.currentState;
-      this.persistence.write({ name: toJS(name), params: toJS(params) });
+    const _newStateName = newState.name;
+    if (typeof this._states[_newStateName] !== 'undefined') {
+      // validate that new state name exists in state map
+      // if persistence exists, write to it
+      this._setParams({ ...this.currentState.params, ...newState.params });
+      this.currentState = {
+        name: _newStateName,
+        params: this.currentState.params
+      };
+    } else if (this.currentState.name === '') {
+      this.currentState = {
+        name: Object.keys(this._states)[0],
+        params: this.currentState.params
+      };
     }
   }
 
@@ -87,29 +95,23 @@ class MobxStateMachineRouter {
     }
   }
 
-  emit(actionName: string, query: object) {
+  emit(actionName: string, query: object = {}) {
     // determine new state to transition to
     const newState = transition(this._states, this.state, actionName);
 
-    // handle error states
-    if (actionName === 'error') {
-      this._setCurrentState({
-        name: newState,
-        params: this.currentState.params
-      });
-
-      // TODO: handle error state
-      return;
-    }
-
     if (newState != null) {
-      // update query params
-      this._setParams({ ...this.currentState.params, ...query });
-      // update state + persist if needed
-      this._setCurrentState({
-        name: newState === 'noop' ? this.currentState.name : newState,
-        params: this.currentState.params
-      });
+      // if a persistence layer exists, write to it, and expect to resolve internal state as a result
+      if (typeof this.persistence.write === 'function') {
+        this.persistence.write({
+          name: newState,
+          params: { ...this.currentState.params, ...query }
+        });
+      } else {
+        this._setCurrentState({
+          name: newState,
+          params: query
+        });
+      }
     }
   }
 
@@ -129,37 +131,24 @@ class MobxStateMachineRouter {
     // set initial query
     this._setParams(query);
 
-    // determine initial state based on
-    if (this.persistence.currentState != null) {
-      this._setCurrentState(this.persistence.currentState);
-    } else {
-      this._setCurrentState({
-        name: startState,
-        params: this.currentState.params
-      });
-    }
-
     for (const i in states) {
       const route = states[i].url;
       this._reverseRoutes[route.toLowerCase()] = i;
     }
-
-    // if persistence has a listen function, subscribe
-    if (typeof this.persistence.listen === 'function') {
-      this.persistence.listen(() => {
-        const { name } = this.persistence.currentState;
-        const route = this._reverseRoutes[name];
-        if (route == null) {
-          // console.warn(
-          //   'No reverse route found for ',
-          //   name,
-          //   this._reverseRoutes
-          // );
-        } else {
-          this._setCurrentState(this.persistence.currentState);
+    // subscribe to persistence and set currentState
+    if (this.persistence.currentState != null) {
+      observe(this.persistence, 'currentState', ({ newValue }) => {
+        const route = this._reverseRoutes[newValue.name];
+        if (route != null) {
+          this._setCurrentState({ ...newValue, name: route });
         }
       });
     }
+
+    this._setCurrentState({
+      name: startState,
+      params: this.currentState.params
+    });
   }
 }
 export default MobxStateMachineRouter;

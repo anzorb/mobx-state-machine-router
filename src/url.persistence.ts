@@ -1,6 +1,6 @@
 import * as queryString from 'query-string';
 import { createHashHistory, History, Location } from 'history';
-import { computed, action } from 'mobx';
+import { computed, action, observable } from 'mobx';
 import { sanitize } from './utils';
 
 export interface CurrentState {
@@ -11,13 +11,14 @@ export interface CurrentState {
 class URLPersistence {
   _history: History = <History>{};
 
-  _location: Location = <Location>{};
+  @observable _location: Location = <Location>{};
 
   _testURL: string = '';
 
   constructor(history: History = <History>createHashHistory()) {
     this._history = history;
     this._history.listen(this._updateLocation);
+    this._updateLocation(this._history.location);
   }
 
   @action.bound
