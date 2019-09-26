@@ -1,10 +1,12 @@
+import { States } from './index';
+
 export interface CurrentState {
   name: string;
   params: object;
 }
 
 export interface WriteFn {
-  (currentState: CurrentState);
+  (currentState: CurrentState, states: States);
 }
 
 interface ListenFnParam {}

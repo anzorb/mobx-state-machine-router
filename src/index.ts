@@ -147,6 +147,13 @@ class MobxStateMachineRouter {
     }
     this.emit = this.emit.bind(this);
 
+    // add new props
+    for (const key in query) {
+      extendObservable(this.currentState.params, {
+        [key]: query[key]
+      });
+    }
+
     for (const i in states) {
       const route = states[i].url;
       this._reverseRoutes[route.toLowerCase()] = i;
@@ -159,12 +166,19 @@ class MobxStateMachineRouter {
           this._setCurrentState({ ...newValue, name: route });
         }
       });
+      const route = this._reverseRoutes[this.persistence.currentState.name];
+      if (route != null) {
+        this._setCurrentState({
+          ...this.persistence.currentState,
+          name: route
+        });
+      }
+    } else {
+      this._setCurrentState({
+        name: startState,
+        params: query
+      });
     }
-
-    this._setCurrentState({
-      name: startState,
-      params: query
-    });
   }
 }
 export { default as URLPersistence } from './url.persistence';

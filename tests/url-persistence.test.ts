@@ -8,6 +8,11 @@ describe('URL Persistence', () => {
     persistence = new URLPersistence();
   });
 
+  afterEach(() => {
+    window.location.hash = '';
+    jest.clearAllMocks();
+  });
+
   it('should parse URL correctly', () => {
     persistence._updateLocation({
       pathname: '/hello',

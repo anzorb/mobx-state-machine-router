@@ -34,6 +34,7 @@ const states = {
 
 describe('init', () => {
   afterEach(() => {
+    window.location.hash = '';
     jest.clearAllMocks();
   });
 
@@ -81,12 +82,13 @@ describe('MobX state machine router', () => {
       states,
       startState: 'HOME',
       query: {
-        activity: null
+        activity: ''
       }
     });
   });
 
   afterEach(() => {
+    window.location.hash = '';
     jest.clearAllMocks();
     stateMachineRouter = null;
   });
@@ -140,7 +142,7 @@ describe('MobX state machine router', () => {
       const listener = jest.fn();
       observe(stateMachineRouter.currentState.params, 'activity', listener);
       stateMachineRouter.emit('slack', { activity: 'ping-pong' });
-      expect(stateMachineRouter.currentState.params.activity).toBe(null);
+      expect(stateMachineRouter.currentState.params.activity).toBe('');
       expect(listener).not.toHaveBeenCalled();
     });
 
@@ -194,8 +196,10 @@ describe('with URL persistence', () => {
   });
 
   afterEach(() => {
+    window.location.hash = '';
     jest.clearAllMocks();
     stateMachineRouter = null;
+    persistence = null;
   });
 
   it('should do basic routing', () => {
@@ -205,12 +209,15 @@ describe('with URL persistence', () => {
 
   it('should ignore unknown routes and ignore state change', () => {
     const spy = jest.fn();
+    const spy2 = jest.fn();
     observe(persistence, 'currentState', spy);
+    observe(stateMachineRouter, 'currentState', spy2);
     persistence._updateLocation({
       pathname: '/somewhere',
       search: '?what=world&where=bla'
     });
     expect(spy).toHaveBeenCalled();
+    expect(spy2).not.toHaveBeenCalled();
     expect(stateMachineRouter.currentState.name).toBe('HOME');
   });
 
@@ -269,8 +276,10 @@ describe('intercepting state changes', () => {
   });
 
   afterEach(() => {
+    window.location.hash = '';
     jest.clearAllMocks();
     stateMachineRouter = null;
+    persistence = null;
   });
 
   it('should allow to intercept state change and override result state', () => {
