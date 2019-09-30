@@ -2,6 +2,37 @@
 
 [![codecov](https://codecov.io/gh/interestingChoice/mobx-state-machine-router/branch/master/graph/badge.svg)](https://codecov.io/gh/interestingChoice/mobx-state-machine-router)
 
+### Motivation
+
+- Predictable UIs based on a simple state-map, and a set of actions and params
+  ```js
+  {
+    'HOME': {
+        actions: {
+            goToWork: 'WORK'
+        }
+    },
+    'WORK': {...
+  ```
+- Components are shown/hidden when state or params change via `mobx.observer` or the `Observer` component
+- Side Effects can react to state too, via React's `useEffect()`
+
+```js
+useEffect(() => {
+  // do something with state
+}, [router.currentState]);
+```
+
+- Emitting an action produces a new state
+  ```
+  emit(actionName: string, query: object = {})
+  ```
+- Ability to use `mobx.observe` and `mobx.intercept` to reject/modify/intercept state changes
+- Optional URL persistence with deep linking
+- React Native support OOB
+
+---
+
 ### Installation
 
 ```js
@@ -13,6 +44,8 @@ or
 ```js
 yarn add mobx-state-machine-router
 ```
+
+---
 
 ### Basics
 
@@ -38,6 +71,8 @@ console.log(stateMachineRouter.currentState.name);
 > 'WORK'
 ```
 
+---
+
 ### Passing Params
 
 All params are passed as mobx observables, allowing to `observe` and `intercept` them. Both the `currentState` object as well as individual params can be observed.
@@ -55,12 +90,16 @@ console.log(stateMachineRouter.currentState);
 }
 ```
 
+---
+
 ### Observing state changes
 
 ```js
 observe(stateMachineRouter, 'currentState', () => {});
 observe(stateMachineRouter.currentState.params, 'method', () => {});
 ```
+
+---
 
 ### Intercepting state changes
 
@@ -84,5 +123,26 @@ interceptAsync(stateMachineRouter, 'currentState', async object => {
     return object;
   }
   return { ...object, newValue: { name: 'LOGIN_ERROR' } };
+});
+```
+
+---
+
+### Rendering UI Elements
+
+The Router can be accessed in using React's Context API or other means. Components wrapped in observer will re-render whenever state changes.
+
+```jsx
+import { observer } from 'mobx-react';
+
+export const App = observer(() => {
+  const { currentState } = router;
+
+  return (
+    <>
+    { currentState.name === 'home' && <Home> }
+    { currentState.name === 'about' && <About> }
+    </>
+  )
 });
 ```
