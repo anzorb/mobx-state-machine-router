@@ -17,11 +17,11 @@
 - Components are shown/hidden when state or params change via `mobx.observer` or the `Observer` component
 - Side Effects can react to state too, via React's `useEffect()`
 
-```js
-useEffect(() => {
-  // do something with state
-}, [router.currentState]);
-```
+  ```js
+  useEffect(() => {
+    // do something with state
+  }, [router.currentState]);
+  ```
 
 - Emitting an action produces a new state
   ```
