@@ -1,4 +1,4 @@
-import { createHashHistory } from 'history';
+import { createHashHistory, Location } from 'history';
 import { observe, intercept } from 'mobx';
 import interceptAsync from 'mobx-async-intercept';
 import MobxStateMachineRouter from '../src';
@@ -36,6 +36,14 @@ describe('init', () => {
   afterEach(() => {
     window.location.hash = '';
     jest.clearAllMocks();
+  });
+
+  it('should allow to create instance with null startState or query', () => {
+    const stateMachineRouter = new MobxStateMachineRouter({
+      states
+    });
+    expect(stateMachineRouter.currentState.name).toBe('HOME');
+    expect(stateMachineRouter.currentState.params).toEqual({});
   });
 
   it('should allow to create instance with different startStates + validation', () => {
@@ -212,7 +220,7 @@ describe('with URL persistence', () => {
     const spy2 = jest.fn();
     observe(persistence, 'currentState', spy);
     observe(stateMachineRouter, 'currentState', spy2);
-    persistence._updateLocation({
+    persistence._updateLocation(<Location>{
       pathname: '/somewhere',
       search: '?what=world&where=bla'
     });
@@ -252,12 +260,32 @@ describe('with URL persistence', () => {
   it('should listen to persistence layer for changes', () => {
     const spy = jest.fn();
     observe(persistence, 'currentState', spy);
-    persistence._updateLocation({
+    persistence._updateLocation(<Location>{
       pathname: '/work',
       search: '?what=world&where=bla'
     });
     expect(spy).toHaveBeenCalled();
     expect(stateMachineRouter.currentState.name).toBe('WORK');
+  });
+});
+
+it('should invalid starting urls', () => {
+  const persistence = new URLPersistence(createHashHistory());
+  persistence._updateLocation(<Location>{
+    pathname: '/invalid',
+    search: '?what=world&where=bla'
+  });
+  const stateMachineRouter = new MobxStateMachineRouter({
+    states,
+    startState: 'HOME',
+    query: {
+      activity: null
+    },
+    persistence
+  });
+  expect(stateMachineRouter.currentState.name).toBe('HOME');
+  expect(stateMachineRouter.currentState.params).toEqual({
+    activity: undefined
   });
 });
 

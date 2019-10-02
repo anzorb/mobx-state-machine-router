@@ -28,8 +28,8 @@ interface Query {
 
 interface Params {
   states: States;
-  startState: string;
-  query: Query;
+  startState?: string;
+  query?: Query;
   persistence?: Persistence;
 }
 
@@ -65,11 +65,12 @@ class MobxStateMachineRouter {
   _setCurrentState(newState: CurrentState) {
     const _newStateName = newState.name;
     if (typeof this._states[_newStateName] !== 'undefined') {
-      // // update/remove existing props
+      // update/remove existing props
       for (const key in toJS(this.currentState.params)) {
+        // if param value is null or undefined in new query
         if (newState.params[key] == null) {
           this.currentState.params[key] = undefined;
-        } else if (typeof newState.params[key] !== 'undefined') {
+        } else {
           this.currentState.params[key] = newState.params[key];
         }
         delete newState.params[key];
@@ -88,26 +89,11 @@ class MobxStateMachineRouter {
           params: this.currentState.params
         };
       }
-    } else if (this.currentState.name === '') {
+    } else {
       this.currentState = {
         name: Object.keys(this._states)[0],
         params: this.currentState.params
       };
-    }
-  }
-
-  @action
-  _setParams(query: object) {
-    for (const key in toJS(this.currentState.params)) {
-      if (typeof query[key] !== 'undefined') {
-        this.currentState.params[key] = query[key];
-        delete query[key];
-      }
-    }
-    for (const key in query) {
-      extendObservable(this.currentState.params, {
-        [key]: query[key]
-      });
     }
   }
 
@@ -128,7 +114,7 @@ class MobxStateMachineRouter {
       } else {
         this._setCurrentState({
           name: newState,
-          params: query
+          params: { ...this.currentState.params, ...query }
         });
       }
     }
@@ -154,12 +140,13 @@ class MobxStateMachineRouter {
       });
     }
 
-    for (const i in states) {
-      const route = states[i].url;
-      this._reverseRoutes[route.toLowerCase()] = i;
-    }
     // subscribe to persistence and set currentState
-    if (this.persistence.currentState != null) {
+    if (this.persistence && this.persistence.currentState != null) {
+      for (const i in states) {
+        const route = states[i].url;
+        this._reverseRoutes[route.toLowerCase()] = i;
+      }
+
       observe(this.persistence, 'currentState', ({ newValue }) => {
         const route = this._reverseRoutes[newValue.name];
         if (route != null) {
@@ -171,6 +158,12 @@ class MobxStateMachineRouter {
         this._setCurrentState({
           ...this.persistence.currentState,
           name: route
+        });
+      } else {
+        // ignore invalid starting URLs and params
+        this._setCurrentState({
+          name: startState,
+          params: query
         });
       }
     } else {
