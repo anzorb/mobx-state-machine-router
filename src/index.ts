@@ -52,7 +52,7 @@ class MobxStateMachineRouter {
 
   _startState: string = 'HOME';
 
-  _startParams: Query = <Query> {};
+  _startParams: Query = <Query>{};
 
   _states: States = <States>{};
 
@@ -154,7 +154,10 @@ class MobxStateMachineRouter {
       observe(this.persistence, 'currentState', ({ newValue }) => {
         const route = this._reverseRoutes[newValue.name];
         if (route != null) {
-          this._setCurrentState({ params: { ...query, ...this.persistence.currentState.params }, name: route });
+          this._setCurrentState({
+            params: { ...query, ...this.persistence.currentState.params },
+            name: route
+          });
         }
       });
       const route = this._reverseRoutes[this.persistence.currentState.name];

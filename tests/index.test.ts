@@ -124,9 +124,7 @@ describe('MobX state machine router', () => {
       stateMachineRouter.emit('goToWork');
       stateMachineRouter.emit('slack', { activity: null });
       expect(stateMachineRouter.state).toBe('WORK');
-      expect(stateMachineRouter.currentState.params.activity).toEqual(
-        ''
-      );
+      expect(stateMachineRouter.currentState.params.activity).toEqual('');
     });
 
     it('should support child states', () => {
@@ -303,8 +301,7 @@ it('should allow resetting query params', () => {
   expect(stateMachineRouter.currentState.params.activity).toBe('initial');
 });
 
-
-it('shouldn\'t initialize with bad state', () => {
+it("shouldn't initialize with bad state", () => {
   const persistence = new URLPersistence(createHashHistory());
   persistence._updateLocation(<Location>{
     pathname: '/',
