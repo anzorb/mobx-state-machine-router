@@ -32,7 +32,7 @@ class URLPersistence {
   get currentState(): CurrentState {
     const params = parse(this._location.search);
     const name = decodeURIComponent(this._location.pathname);
-
+    //console.log(name, params);
     return { name, params };
   }
 

@@ -156,7 +156,7 @@ class MobxStateMachineRouter {
       const route = this._reverseRoutes[this.persistence.currentState.name];
       if (route != null) {
         this._setCurrentState({
-          ...this.persistence.currentState,
+          params: { ...query, ...this.persistence.currentState.params },
           name: route
         });
       } else {

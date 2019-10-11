@@ -289,6 +289,25 @@ it('should invalid starting urls', () => {
   });
 });
 
+it('shouldn\'t initialize with bad state', () => {
+  const persistence = new URLPersistence(createHashHistory());
+  persistence._updateLocation(<Location>{
+    pathname: '/',
+    search: ''
+  });
+  const stateMachineRouter = new MobxStateMachineRouter({
+    states,
+    startState: 'HOME',
+    query: {
+      activity: ''
+    },
+    persistence
+  });
+  expect(stateMachineRouter.currentState.params).toEqual({
+    activity: ''
+  });
+});
+
 describe('intercepting state changes', () => {
   let stateMachineRouter;
   let persistence;
