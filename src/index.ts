@@ -52,6 +52,8 @@ class MobxStateMachineRouter {
 
   _startState: string = 'HOME';
 
+  _startParams: Query = <Query> {};
+
   _states: States = <States>{};
 
   _reverseRoutes: ReverseRoutes = <ReverseRoutes>{};
@@ -65,20 +67,21 @@ class MobxStateMachineRouter {
   _setCurrentState(newState: CurrentState) {
     const _newStateName = newState.name;
     if (typeof this._states[_newStateName] !== 'undefined') {
+      const params = { ...newState.params };
       // update/remove existing props
       for (const key in toJS(this.currentState.params)) {
         // if param value is null or undefined in new query
-        if (newState.params[key] == null) {
-          this.currentState.params[key] = undefined;
+        if (params[key] == null) {
+          this.currentState.params[key] = this._startParams[key];
         } else {
-          this.currentState.params[key] = newState.params[key];
+          this.currentState.params[key] = params[key];
         }
-        delete newState.params[key];
+        delete params[key];
       }
       // add new props
-      for (const key in newState.params) {
+      for (const key in params) {
         extendObservable(this.currentState.params, {
-          [key]: newState.params[key]
+          [key]: params[key]
         });
       }
 
@@ -128,6 +131,7 @@ class MobxStateMachineRouter {
   }: Params) {
     this._states = states;
     this._startState = startState;
+    this._startParams = query;
     if (persistence != null) {
       this.persistence = persistence;
     }
@@ -150,7 +154,7 @@ class MobxStateMachineRouter {
       observe(this.persistence, 'currentState', ({ newValue }) => {
         const route = this._reverseRoutes[newValue.name];
         if (route != null) {
-          this._setCurrentState({ ...newValue, name: route });
+          this._setCurrentState({ params: { ...query, ...this.persistence.currentState.params }, name: route });
         }
       });
       const route = this._reverseRoutes[this.persistence.currentState.name];

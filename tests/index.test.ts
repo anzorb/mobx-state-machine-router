@@ -125,7 +125,7 @@ describe('MobX state machine router', () => {
       stateMachineRouter.emit('slack', { activity: null });
       expect(stateMachineRouter.state).toBe('WORK');
       expect(stateMachineRouter.currentState.params.activity).toEqual(
-        undefined
+        ''
       );
     });
 
@@ -229,16 +229,6 @@ describe('with URL persistence', () => {
     expect(stateMachineRouter.currentState.name).toBe('HOME');
   });
 
-  it('should allow resetting query params', () => {
-    stateMachineRouter.emit('goToWork');
-    stateMachineRouter.emit('slack', { activity: 'daydreaming' });
-    expect(stateMachineRouter.currentState.params.activity).toBe('daydreaming');
-    expect(persistence._testURL).toBe('#/work?activity=daydreaming');
-    stateMachineRouter.emit('slack', { activity: null });
-    expect(persistence._testURL).toBe('#/work');
-    expect(stateMachineRouter.currentState.params.activity).toBe(undefined);
-  });
-
   it('should update query params', () => {
     stateMachineRouter.emit('goToWork');
     stateMachineRouter.emit('slack', { activity: 'daydreaming' });
@@ -285,9 +275,34 @@ it('should invalid starting urls', () => {
   });
   expect(stateMachineRouter.currentState.name).toBe('HOME');
   expect(stateMachineRouter.currentState.params).toEqual({
-    activity: undefined
+    activity: null
   });
 });
+
+it('should allow resetting query params', () => {
+  const persistence = new URLPersistence(createHashHistory());
+  persistence._updateLocation(<Location>{
+    pathname: '/invalid',
+    search: '?what=world&where=bla'
+  });
+  const stateMachineRouter = new MobxStateMachineRouter({
+    states,
+    startState: 'HOME',
+    query: {
+      activity: 'initial'
+    },
+    persistence
+  });
+  stateMachineRouter.emit('goToWork');
+  expect(stateMachineRouter.currentState.params.activity).toBe('initial');
+  stateMachineRouter.emit('slack', { activity: 'daydreaming' });
+  expect(stateMachineRouter.currentState.params.activity).toBe('daydreaming');
+  expect(persistence._testURL).toBe('#/work?activity=daydreaming');
+  stateMachineRouter.emit('slack', { activity: null });
+  expect(persistence._testURL).toBe('#/work');
+  expect(stateMachineRouter.currentState.params.activity).toBe('initial');
+});
+
 
 it('shouldn\'t initialize with bad state', () => {
   const persistence = new URLPersistence(createHashHistory());
