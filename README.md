@@ -4,7 +4,13 @@
 
 ### Motivation
 
-- Predictable UIs based on a simple state-map, and a set of actions and params
+- State Machines are great for declarative, predictable UI transitions
+- MobX is great at re-rendering UIs, observing and intercepting changes
+- Combining these two, and making URL persistence separate (and optional), brings modern, simple, predictable routing to React and React Native apps using Mobx 4+
+
+### How it works
+
+- A State Map is defined with a set of states and their actions:
   ```js
   {
     'HOME': {
@@ -14,8 +20,12 @@
     },
     'WORK': {...
   ```
-- Components are shown/hidden when state or params change via `mobx.observer` or the `Observer` component
-- Side Effects can react to state too, via React's `useEffect()`
+- Emitting an action produces a new state
+  ```
+  emit(actionName: string, query: object = {})
+  ```
+- Components are re-rendered automatically thanks to Mobx' `Observer` HOC and `@observer` decorator
+- Side Effects can also happen when state/params change using React's `useEffect()`, `mobx.observe()` or `mobx.autorun()`
 
   ```js
   useEffect(() => {
@@ -23,13 +33,9 @@
   }, [router.currentState]);
   ```
 
-- Emitting an action produces a new state
-  ```
-  emit(actionName: string, query: object = {})
-  ```
-- Ability to use `mobx.observe` and `mobx.intercept` to reject/modify/intercept state changes
-- Optional URL persistence with deep linking
-- React Native support OOB
+- `mobx.intercept` can be used for error handling, and `interceptAsync` can be used for async side-effects
+- URL persistence is optional and separate
+- First class React Native support
 
 ---
 
@@ -48,8 +54,6 @@ yarn add @mobx-state-machine-router/core
 ---
 
 ### Basics
-
-State machine routing using actions, with optional URL persistence capabilities with Mobx
 
 ```js
 const states = {
