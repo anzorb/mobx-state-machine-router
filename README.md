@@ -36,13 +36,13 @@
 ### Installation
 
 ```js
-npm install mobx-state-machine-router
+npm install @mobx-state-machine-router/core
 ```
 
 or
 
 ```js
-yarn add mobx-state-machine-router
+yarn add @mobx-state-machine-router/core
 ```
 
 ---

@@ -6,8 +6,17 @@ import {
   toJS,
   observe
 } from 'mobx';
-import { transition } from './utils';
 import { Persistence } from './persistence';
+
+const transition = (
+  states: States,
+  curState: string,
+  actionName: string
+): string => {
+  const result = states[curState].actions[actionName];
+
+  return result;
+};
 
 interface Actions {
   [actionName: string]: string;
@@ -15,7 +24,7 @@ interface Actions {
 
 interface State {
   actions: Actions;
-  url: string;
+  url?: string;
 }
 
 export interface States {
@@ -151,11 +160,12 @@ class MobxStateMachineRouter {
         this._reverseRoutes[route.toLowerCase()] = i;
       }
 
-      observe(this.persistence, 'currentState', ({ newValue }) => {
-        const route = this._reverseRoutes[newValue.name];
+      this.persistence.listen(() => {
+        const { name, params } = this.persistence.currentState;
+        const route = this._reverseRoutes[name];
         if (route != null) {
           this._setCurrentState({
-            params: { ...query, ...this.persistence.currentState.params },
+            params: { ...query, ...params },
             name: route
           });
         }
@@ -181,5 +191,5 @@ class MobxStateMachineRouter {
     }
   }
 }
-export { default as URLPersistence } from './url.persistence';
+export { default as URLPersistence } from '../../url-persistence/src';
 export default MobxStateMachineRouter;
