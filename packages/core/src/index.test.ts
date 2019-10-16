@@ -9,30 +9,26 @@ const states = {
     actions: {
       goToWork: 'WORK',
       clean: 'HOME'
-    },
-    url: '/'
+    }
   },
   WORK: {
     actions: {
       goHome: 'HOME',
       slack: 'WORK',
       getFood: 'WORK/LUNCHROOM'
-    },
-    url: '/work'
+    }
   },
   'WORK/LUNCHROOM': {
     actions: {
       eat: 'WORK/LUNCHROOM',
       backToWork: 'WORK',
       tiredAfterLunchGoHome: 'HOME'
-    },
-    url: '/work/lunchroom'
+    }
   }
 };
 
 describe('init', () => {
   afterEach(() => {
-    window.location.hash = '';
     jest.clearAllMocks();
   });
 
@@ -250,19 +246,19 @@ describe('intercepting state changes', () => {
               params: { ...object.newValue.params, activity: 'working-hard' }
             }
           });
-        }, 3);
+        }, 10);
       });
     });
     stateMachineRouter.emit('goToWork', { activity: 'slack' });
     setTimeout(() => {
       expect(stateMachineRouter.currentState.name).toBe('HOME');
-    }, 2);
+    }, 0);
     setTimeout(() => {
       expect(stateMachineRouter.currentState.name).toBe('WORK');
       expect(stateMachineRouter.currentState.params.activity).toBe(
         'working-hard'
       );
       done();
-    }, 3);
+    }, 30);
   });
 });

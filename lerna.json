@@ -1,0 +1,8 @@
+{
+  "version": "5.1.3",
+  "npmClient": "yarn",
+  "packages": ["packages/*"],
+  "create": {
+    "license": "MIT"
+  }
+}

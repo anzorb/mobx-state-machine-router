@@ -1,9 +1,23 @@
-import { createHashHistory, History, Location } from 'history';
-// import { computed, action, observable } from 'mobx';
-import { sanitize } from './utils';
-import { States } from '.';
+import {
+  createHashHistory,
+  History,
+  Location,
+  LocationListener
+} from 'history';
+import { parse, stringify } from 'query-string';
+import { States } from './persistence';
 
-const { parse, stringify } = require('query-string');
+const sanitize = (object): object => {
+  const keys = Object.keys(object);
+  const result = {};
+  keys.forEach(key => {
+    if (object[key] != null) {
+      result[key] = object[key];
+    }
+  });
+
+  return result;
+};
 
 export interface CurrentState {
   name: string;
@@ -13,6 +27,8 @@ export interface CurrentState {
 class URLPersistence {
   _history: History = <History>{};
 
+  listen = (listener: LocationListener<any>) => {};
+
   _location: Location = <Location>{};
 
   _testURL: string = '';
@@ -20,6 +36,7 @@ class URLPersistence {
   constructor(history: History = <History>createHashHistory()) {
     this._updateLocation = this._updateLocation.bind(this);
     this._history = history;
+    this.listen = this._history.listen.bind(this);
     this._history.listen(this._updateLocation);
     this._updateLocation(this._history.location);
   }

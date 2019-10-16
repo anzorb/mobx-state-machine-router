@@ -22,15 +22,15 @@ export default {
     }
   ],
   plugins: [
-    json(),
     external(),
     resolve({
       extensions
     }),
+    json(),
+    commonjs(),
     babel({
       extensions
-    }),
-    commonjs()
-    //terser()
+    })
+    // terser()
   ]
 };

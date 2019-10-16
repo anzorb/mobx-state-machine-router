@@ -1,4 +1,11 @@
-import { States } from './index';
+interface State {
+  actions: Actions;
+  url?: string;
+}
+
+export interface States {
+  [stateName: string]: State;
+}
 
 export interface CurrentState {
   name: string;
