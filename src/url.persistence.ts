@@ -1,5 +1,5 @@
 import { createHashHistory, History, Location } from 'history';
-import { computed, action, observable } from 'mobx';
+// import { computed, action, observable } from 'mobx';
 import { sanitize } from './utils';
 import { States } from '.';
 
@@ -13,22 +13,23 @@ export interface CurrentState {
 class URLPersistence {
   _history: History = <History>{};
 
-  @observable _location: Location = <Location>{};
+  _location: Location = <Location>{};
 
   _testURL: string = '';
 
   constructor(history: History = <History>createHashHistory()) {
+    this._updateLocation = this._updateLocation.bind(this);
     this._history = history;
     this._history.listen(this._updateLocation);
     this._updateLocation(this._history.location);
   }
 
-  @action.bound
+  // @action.bound
   _updateLocation(location: Location) {
     this._location = location;
   }
 
-  @computed
+  //  @computed
   get currentState(): CurrentState {
     const params = parse(this._location.search);
     const name = decodeURIComponent(this._location.pathname);
