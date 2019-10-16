@@ -227,7 +227,7 @@ describe('intercepting state changes', () => {
     stateMachineRouter.emit('goToWork', { activity: 'slack' });
     setTimeout(() => {
       expect(stateMachineRouter.currentState.name).toBe('HOME');
-    }, 2);
+    }, 0);
     setTimeout(() => {
       expect(stateMachineRouter.currentState.name).toBe('ERROR');
       expect(stateMachineRouter.currentState.params.activity).toBe('slack');
