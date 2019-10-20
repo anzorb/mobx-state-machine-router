@@ -1,6 +1,6 @@
 {
   "name": "@mobx-state-machine-router/url-persistence",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "State Machine routing for Mobx",
   "author": "Anzor Bashkhaz",
   "email": "mansion.labs@gmail.com",
@@ -19,7 +19,7 @@
   "module": "dist/index.es.js",
   "esnext:module": "dist/index.es.js",
   "dependencies": {
-    "@mobx-state-machine-router/core": "^1.2.1",
+    "@mobx-state-machine-router/core": "^1.2.2",
     "@types/history": "^4.7.3",
     "history": "^4.9.0",
     "query-string": "^6.8.3",
