@@ -16,7 +16,14 @@
     "node": ">=8",
     "npm": ">=5"
   },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "peerDependencies": {
     "mobx": "^4.12.0"
-  }
+  },
+  "gitHead": "c632d6126ea56d1fdee8294411215b487e880d10"
 }
