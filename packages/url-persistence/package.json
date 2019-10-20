@@ -1,6 +1,6 @@
 {
   "name": "@mobx-state-machine-router/url-persistence",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "description": "State Machine routing for Mobx",
   "author": "Anzor Bashkhaz",
   "email": "mansion.labs@gmail.com",
