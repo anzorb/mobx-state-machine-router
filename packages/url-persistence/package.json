@@ -21,7 +21,7 @@
   "dependencies": {
     "@types/history": "^4.7.3",
     "history": "^4.9.0",
-    "query-string": "^6.8.3"
+    "query-string": "5.1.1"
   },
   "devDependenices": {
     "@mobx-state-machine-router/core": "^1.2.3",
