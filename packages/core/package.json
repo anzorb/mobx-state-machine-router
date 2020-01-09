@@ -3,11 +3,11 @@
   "version": "1.2.3",
   "description": "State Machine routing for Mobx",
   "author": "Anzor Bashkhaz",
-  "email": "mansion.labs@gmail.com",
+  "email": "anzorb@gmail.com",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git@github.com:interestingChoice/mobx-state-machine-router"
+    "url": "git@github.com:anzorb/mobx-state-machine-router"
   },
   "main": "dist/index.js",
   "module": "dist/index.es.js",
