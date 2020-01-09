@@ -1,11 +1,4 @@
-import {
-  observable,
-  action,
-  computed,
-  extendObservable,
-  toJS,
-  observe
-} from 'mobx';
+import { observable, action, computed, extendObservable, toJS } from 'mobx';
 import { Persistence } from './persistence';
 
 const transition = (
