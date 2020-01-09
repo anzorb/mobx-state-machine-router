@@ -184,5 +184,4 @@ class MobxStateMachineRouter {
     }
   }
 }
-export { default as URLPersistence } from '../../url-persistence/src';
 export default MobxStateMachineRouter;

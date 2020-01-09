@@ -20,5 +20,5 @@
     "allowSyntheticDefaultImports": true,
     "lib": ["es6"]
   },
-  "include": ["packages/**/*.ts"]
+  "include": ["./**/*.ts"]
 }
