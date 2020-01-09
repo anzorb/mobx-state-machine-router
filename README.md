@@ -1,6 +1,6 @@
-[![CircleCI](https://circleci.com/gh/interestingChoice/mobx-state-machine-router.svg?style=svg)](https://circleci.com/gh/interestingChoice/mobx-state-machine-router)
+[![CircleCI](https://circleci.com/gh/anzorb/mobx-state-machine-router.svg?style=svg)](https://circleci.com/gh/anzorb/mobx-state-machine-router)
 
-[![codecov](https://codecov.io/gh/interestingChoice/mobx-state-machine-router/branch/master/graph/badge.svg)](https://codecov.io/gh/interestingChoice/mobx-state-machine-router)
+[![codecov](https://codecov.io/gh/anzorb/mobx-state-machine-router/branch/master/graph/badge.svg)](https://codecov.io/gh/anzorb/mobx-state-machine-router)
 
 ### Motivation
 
