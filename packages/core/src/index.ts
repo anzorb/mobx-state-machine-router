@@ -56,6 +56,8 @@ class MobxStateMachineRouter {
 
   _startParams: Query = <Query>{};
 
+  _stateHistory: CurrentState[] = [];
+
   _states: States = <States>{};
 
   _reverseRoutes: ReverseRoutes = <ReverseRoutes>{};
@@ -72,12 +74,8 @@ class MobxStateMachineRouter {
       const params = { ...newState.params };
       // update/remove existing props
       for (const key in toJS(this.currentState.params)) {
-        // if param value is null or undefined in new query
-        if (params[key] == null) {
-          this.currentState.params[key] = this._startParams[key];
-        } else {
-          this.currentState.params[key] = params[key];
-        }
+        this.currentState.params[key] = params[key];
+
         delete params[key];
       }
       // add new props
@@ -89,22 +87,44 @@ class MobxStateMachineRouter {
 
       // only update the whole object if a new State exists
       if (this.currentState.name !== _newStateName) {
-        this.currentState = {
+        const newState = {
           name: _newStateName,
           params: this.currentState.params
         };
+        this.currentState = newState;
+        this._stateHistory.push(newState);
       }
     } else {
-      this.currentState = {
+      const newState = {
         name: Object.keys(this._states)[0],
         params: this.currentState.params
       };
+
+      this.currentState = newState;
+      this._stateHistory.push(newState);
     }
   }
 
   emit(actionName: string, query: object = {}) {
+    let newState;
+    let newParams = {};
+
     // determine new state to transition to
-    const newState = transition(this._states, this.state, actionName);
+    if (actionName === 'goBack' && this._stateHistory.length > 3) {
+      const newStateObject: CurrentState = this._stateHistory[
+        this._stateHistory.length - 2
+      ];
+      newState = newStateObject.name;
+      newParams = newStateObject.params;
+
+      this._stateHistory.splice(this._stateHistory.length - 2, 2);
+    } else {
+      // determine new state to transition to
+      newState = transition(this._states, this.state, actionName);
+      newParams = { ...this.currentState.params, ...query };
+    }
+
+    console.log(this._stateHistory);
 
     if (newState != null) {
       // if a persistence layer exists, write to it, and expect to resolve internal state as a result
@@ -112,14 +132,14 @@ class MobxStateMachineRouter {
         this.persistence.write(
           {
             name: newState,
-            params: { ...this.currentState.params, ...query }
+            params: newParams
           },
           this._states
         );
       } else {
         this._setCurrentState({
           name: newState,
-          params: { ...this.currentState.params, ...query }
+          params: newParams
         });
       }
     }
@@ -134,6 +154,7 @@ class MobxStateMachineRouter {
     this._states = states;
     this._startState = startState;
     this._startParams = query;
+
     if (persistence != null) {
       this.persistence = persistence;
     }
