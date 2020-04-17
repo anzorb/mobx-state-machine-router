@@ -1,6 +1,6 @@
 import { observe, intercept } from 'mobx';
 import interceptAsync from 'mobx-async-intercept';
-import MobxStateMachineRouter from '../src';
+import MobxStateMachineRouter, { IMobxStateMachineRouter } from '../src';
 
 const ms = ms => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -58,7 +58,7 @@ describe('init', () => {
       startState: 'HOME',
       query: {}
     });
-    expect(stateMachineRouter.currentState.params.activity).toBe(undefined);
+    expect(Object.keys(stateMachineRouter.currentState.params).length).toBe(0);
   });
 
   it('should allow to create instance with queries and setup observables for them', () => {
@@ -179,9 +179,9 @@ describe('MobX state machine router', () => {
   });
 });
 
-describe('history', () => {
-  it.only('should allow to go back', () => {
-    const stateMachineRouter = new MobxStateMachineRouter({
+describe.skip('history', () => {
+  it('should allow to go back', () => {
+    const stateMachineRouter: IMobxStateMachineRouter = new MobxStateMachineRouter({
       states,
       startState: 'HOME',
       query: {
@@ -190,11 +190,11 @@ describe('history', () => {
     });
     stateMachineRouter.emit('goToWork', { method: 'car' });
     stateMachineRouter.emit('getFood', {
-      ...stateMachineRouter.params,
+      ...stateMachineRouter.currentState.params,
       method: null
     });
     stateMachineRouter.emit('tiredAfterLunchGoHome', {
-      ...stateMachineRouter.params
+      ...stateMachineRouter.currentState.params
     });
     // expect(stateMachineRouter.currentState.params).toEqual({
     //   activity: null,

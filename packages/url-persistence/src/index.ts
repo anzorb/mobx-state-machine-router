@@ -4,8 +4,8 @@ import {
   Location,
   LocationListener
 } from 'history';
-import { parse, stringify } from 'query-string';
-import { States } from './persistence';
+import { parse, stringify, ParsedQuery } from 'query-string';
+import { IStates, IPersistence } from '../../core/src';
 
 const sanitize = (object): object => {
   const keys = Object.keys(object);
@@ -19,15 +19,15 @@ const sanitize = (object): object => {
   return result;
 };
 
-export interface CurrentState {
+export interface ICurrentState {
   name: string;
-  params: queryString.ParsedQuery;
+  params: ParsedQuery;
 }
 
-class URLPersistence {
+class URLPersistence implements IPersistence {
   _history: History = <History>{};
 
-  listen = (listener: LocationListener<any>) => {};
+  listen: (listener: LocationListener<any>) => void;
 
   _location: Location = <Location>{};
 
@@ -47,14 +47,14 @@ class URLPersistence {
   }
 
   //  @computed
-  get currentState(): CurrentState {
+  get currentState(): ICurrentState {
     const params = parse(this._location.search);
     const name = decodeURIComponent(this._location.pathname);
 
     return { name, params };
   }
 
-  write(currentState: CurrentState, states: States) {
+  write(currentState: ICurrentState, states: IStates) {
     const name = states[currentState.name].url;
     const params = sanitize(currentState.params);
     const paramsString = stringify(params);

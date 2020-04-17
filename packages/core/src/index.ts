@@ -1,8 +1,7 @@
 import { observable, action, computed, extendObservable, toJS } from 'mobx';
-import { Persistence } from './persistence';
 
 const transition = (
-  states: States,
+  states: IStates,
   curState: string,
   actionName: string
 ): string => {
@@ -11,64 +10,88 @@ const transition = (
   return result;
 };
 
-interface Actions {
+export interface IWriteFn {
+  (currentState: ICurrentState, states: IStates);
+}
+
+interface IListenFnParam {}
+
+export interface IListenFn {
+  //(myArgument: IListenFnParam): ICurrentState;
+  (argumeny: any): any;
+}
+
+export interface IPersistence {
+  currentState: ICurrentState;
+  write: IWriteFn;
+  listen?: IListenFn;
+}
+
+export interface IActions {
   [actionName: string]: string;
 }
 
-interface State {
-  actions: Actions;
+export interface IState {
+  actions: IActions;
   url?: string;
 }
 
-export interface States {
-  [stateName: string]: State;
+export interface IStates {
+  [stateName: string]: IState;
 }
 
-interface Query {
-  [param: string]: string | number;
+export interface IQuery {
+  [param: string]: any;
 }
 
-interface Params {
-  states: States;
+export interface IParams {
+  states: IStates;
   startState?: string;
-  query?: Query;
-  persistence?: Persistence;
+  query?: IQuery;
+  persistence?: IPersistence;
 }
 
-interface ReverseRoutes {
+export interface IReverseRoutes {
   [param: string]: string;
 }
 
-interface CurrentState {
+export interface ICurrentState {
   name: string;
-  params: object;
+  params: IQuery;
 }
 
-class MobxStateMachineRouter {
-  @observable.ref currentState: CurrentState = <CurrentState>{
+export interface IMobxStateMachineRouter {
+  readonly state: string;
+  currentState: ICurrentState;
+  emit: (actionName: string, params?: object) => void;
+  persistence: IPersistence;
+}
+
+class MobxStateMachineRouter implements IMobxStateMachineRouter {
+  @observable.ref currentState = <ICurrentState>{
     name: '',
     params: <object>{}
   };
 
-  persistence: Persistence = <Persistence>{};
+  persistence = <IPersistence>{};
 
-  _startState: string = 'HOME';
+  _startState:string = 'HOME';
 
-  _startParams: Query = <Query>{};
+  _startParams: IQuery = <IQuery>{};
 
-  _stateHistory: CurrentState[] = [];
+  _stateHistory: ICurrentState[] = <ICurrentState[]>[];
 
-  _states: States = <States>{};
+  _states: IStates = <IStates>{};
 
-  _reverseRoutes: ReverseRoutes = <ReverseRoutes>{};
+  _reverseRoutes: IReverseRoutes = <IReverseRoutes>{};
 
   @computed
-  get state(): string {
+  get state() {
     return this.currentState.name;
   }
 
   @action.bound
-  _setCurrentState(newState: CurrentState) {
+  _setCurrentState(newState: ICurrentState) {
     const _newStateName = newState.name;
     if (typeof this._states[_newStateName] !== 'undefined') {
       const params = { ...newState.params };
@@ -111,7 +134,7 @@ class MobxStateMachineRouter {
 
     // determine new state to transition to
     if (actionName === 'goBack' && this._stateHistory.length > 3) {
-      const newStateObject: CurrentState = this._stateHistory[
+      const newStateObject: ICurrentState = this._stateHistory[
         this._stateHistory.length - 2
       ];
       newState = newStateObject.name;
@@ -123,8 +146,6 @@ class MobxStateMachineRouter {
       newState = transition(this._states, this.state, actionName);
       newParams = { ...this.currentState.params, ...query };
     }
-
-    console.log(this._stateHistory);
 
     if (newState != null) {
       // if a persistence layer exists, write to it, and expect to resolve internal state as a result
@@ -150,7 +171,7 @@ class MobxStateMachineRouter {
     startState = 'HOME',
     query = {},
     persistence
-  }: Params) {
+  }: IParams) {
     this._states = states;
     this._startState = startState;
     this._startParams = query;
@@ -171,19 +192,21 @@ class MobxStateMachineRouter {
     if (this.persistence && this.persistence.currentState != null) {
       for (const i in states) {
         const route = states[i].url;
-        this._reverseRoutes[route.toLowerCase()] = i;
+        this._reverseRoutes[route!.toLowerCase()] = i;
       }
 
-      this.persistence.listen(() => {
-        const { name, params } = this.persistence.currentState;
-        const route = this._reverseRoutes[name];
-        if (route != null) {
-          this._setCurrentState({
-            params: { ...query, ...params },
-            name: route
-          });
-        }
-      });
+      if (typeof this.persistence.listen === 'function') {
+        this.persistence.listen(() => {
+          const { name, params } = this.persistence.currentState;
+          const route = this._reverseRoutes[name];
+          if (route != null) {
+            this._setCurrentState({
+              params: { ...query, ...params },
+              name: route
+            });
+          }
+        });
+      }
       const route = this._reverseRoutes[this.persistence.currentState.name];
       if (route != null) {
         this._setCurrentState({

@@ -1,8 +1,10 @@
 {
+  "command": {
+    "publish": {
+      "ignoreChanges": ["**/__snapshots__", "*.md", "*.test.js", "*.txt"]
+    }
+  },
   "version": "independent",
   "npmClient": "yarn",
-  "packages": ["packages/*"],
-  "create": {
-    "license": "MIT"
-  }
+  "useWorkspaces": true
 }

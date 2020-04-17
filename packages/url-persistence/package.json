@@ -15,9 +15,12 @@
   "files": [
     "dist"
   ],
-  "main": "dist/index.js",
-  "module": "dist/index.es.js",
-  "esnext:module": "dist/index.es.js",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest ."
+  },
   "dependencies": {
     "@types/history": "^4.7.3",
     "history": "^4.9.0",
@@ -25,7 +28,9 @@
   },
   "devDependenices": {
     "@mobx-state-machine-router/core": "^1.2.3",
-    "typescript": "^3.6.3"
+    "typescript": "^3.6.3",
+    "rimraf": "3.0.0",
+    "mobx": "^4.12.0"
   },
   "gitHead": "7a1b78930ff6c0b806ee494caca3090078147dc2"
 }

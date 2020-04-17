@@ -1,7 +1,7 @@
 import { observe } from 'mobx';
 import { createHashHistory, Location } from 'history';
-import MobxStateMachineRouter from '@mobx-state-machine-router/core';
 import URLPersistence from '.';
+import MobxStateMachineRouter, { IMobxStateMachineRouter } from '../../core/src/index';
 
 const states = {
   HOME: {
@@ -154,7 +154,7 @@ it('should invalid starting urls', () => {
     pathname: '/invalid',
     search: '?what=world&where=bla'
   });
-  const stateMachineRouter = new MobxStateMachineRouter({
+  const stateMachineRouter: IMobxStateMachineRouter = new MobxStateMachineRouter({
     states,
     startState: 'HOME',
     query: {
@@ -174,7 +174,7 @@ it('should allow resetting query params', () => {
     pathname: '/invalid',
     search: '?what=world&where=bla'
   });
-  const stateMachineRouter = new MobxStateMachineRouter({
+  const stateMachineRouter: IMobxStateMachineRouter = new MobxStateMachineRouter({
     states,
     startState: 'HOME',
     query: {
@@ -198,7 +198,7 @@ it("shouldn't initialize with bad state", () => {
     pathname: '/',
     search: ''
   });
-  const stateMachineRouter = new MobxStateMachineRouter({
+  const stateMachineRouter: IMobxStateMachineRouter = new MobxStateMachineRouter({
     states,
     startState: 'HOME',
     query: {
