@@ -181,13 +181,15 @@ describe('MobX state machine router', () => {
 
 describe.skip('history', () => {
   it('should allow to go back', () => {
-    const stateMachineRouter: IMobxStateMachineRouter = new MobxStateMachineRouter({
-      states,
-      startState: 'HOME',
-      query: {
-        activity: null
+    const stateMachineRouter: IMobxStateMachineRouter = new MobxStateMachineRouter(
+      {
+        states,
+        startState: 'HOME',
+        query: {
+          activity: null
+        }
       }
-    });
+    );
     stateMachineRouter.emit('goToWork', { method: 'car' });
     stateMachineRouter.emit('getFood', {
       ...stateMachineRouter.currentState.params,

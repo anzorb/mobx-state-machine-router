@@ -75,7 +75,7 @@ class MobxStateMachineRouter implements IMobxStateMachineRouter {
 
   persistence = <IPersistence>{};
 
-  _startState:string = 'HOME';
+  _startState: string = 'HOME';
 
   _startParams: IQuery = <IQuery>{};
 

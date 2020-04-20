@@ -1,7 +1,9 @@
 import { observe } from 'mobx';
 import { createHashHistory, Location } from 'history';
 import URLPersistence from '.';
-import MobxStateMachineRouter, { IMobxStateMachineRouter } from '../../core/src/index';
+import MobxStateMachineRouter, {
+  IMobxStateMachineRouter
+} from '../../core/src/index';
 
 const states = {
   HOME: {
@@ -154,14 +156,16 @@ it('should invalid starting urls', () => {
     pathname: '/invalid',
     search: '?what=world&where=bla'
   });
-  const stateMachineRouter: IMobxStateMachineRouter = new MobxStateMachineRouter({
-    states,
-    startState: 'HOME',
-    query: {
-      activity: null
-    },
-    persistence
-  });
+  const stateMachineRouter: IMobxStateMachineRouter = new MobxStateMachineRouter(
+    {
+      states,
+      startState: 'HOME',
+      query: {
+        activity: null
+      },
+      persistence
+    }
+  );
   expect(stateMachineRouter.currentState.name).toBe('HOME');
   expect(stateMachineRouter.currentState.params).toEqual({
     activity: null
@@ -174,14 +178,16 @@ it('should allow resetting query params', () => {
     pathname: '/invalid',
     search: '?what=world&where=bla'
   });
-  const stateMachineRouter: IMobxStateMachineRouter = new MobxStateMachineRouter({
-    states,
-    startState: 'HOME',
-    query: {
-      activity: 'initial'
-    },
-    persistence
-  });
+  const stateMachineRouter: IMobxStateMachineRouter = new MobxStateMachineRouter(
+    {
+      states,
+      startState: 'HOME',
+      query: {
+        activity: 'initial'
+      },
+      persistence
+    }
+  );
   stateMachineRouter.emit('goToWork');
   expect(stateMachineRouter.currentState.params.activity).toBe('initial');
   stateMachineRouter.emit('slack', { activity: 'daydreaming' });
@@ -198,14 +204,16 @@ it("shouldn't initialize with bad state", () => {
     pathname: '/',
     search: ''
   });
-  const stateMachineRouter: IMobxStateMachineRouter = new MobxStateMachineRouter({
-    states,
-    startState: 'HOME',
-    query: {
-      activity: ''
-    },
-    persistence
-  });
+  const stateMachineRouter: IMobxStateMachineRouter = new MobxStateMachineRouter(
+    {
+      states,
+      startState: 'HOME',
+      query: {
+        activity: ''
+      },
+      persistence
+    }
+  );
   expect(stateMachineRouter.currentState.params).toEqual({
     activity: ''
   });
