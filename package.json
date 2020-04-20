@@ -8,23 +8,19 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "lerna exec -- yarn build",
+    "build": "tsc -b packages/core packages/url-persistence",
     "build:watch": "lerna exec -- yarn build --watch",
-    "test:coverage": "jest --coverage --forceExit --colors",
-    "lint:fix": "npm run lint --fix",
-    "prepare": "npm run build",
-    "prerelease": "npm run lint:fix && npm run test:coverage && npm run build",
+    "prepare": "yarn run build",
+    "prerelease": "yarn run prettier:write && yarn run test:coverage && npm run build",
     "release": "np publish",
-    "publish": "lerna publish",
-    "bootstrap": "lerna bootstrap",
-    "test:ci": "jest --ci --collectCoverage=true",
     "preversion": "yarn ci:test",
     "lint": "tslint -p tsconfig.json",
     "test": "jest",
     "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage --forceExit --colors",
+    "test:ci": "jest --ci --collectCoverage=true",
     "prettier:check": "prettier --check 'packages/**/src/**/*.{js,jsx,ts,tsx,json,css,scss,md}'",
-    "prettier:write": "prettier --write 'packages/**/src/**/*.{js,jsx,ts,tsx,json,css,scss,md}'",
-    "ci:test": "yarn lint && yarn test --coverage"
+    "prettier:write": "prettier --write 'packages/**/src/**/*.{js,jsx,ts,tsx,json,css,scss,md}'"
   },
   "devDependencies": {
     "@types/jest": "24.0.11",
