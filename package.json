@@ -13,7 +13,7 @@
     "prepare": "yarn run build",
     "prerelease": "yarn run prettier:write && yarn run test:coverage && npm run build",
     "release": "np publish",
-    "preversion": "yarn ci:test",
+    "publish": "lerna publish",
     "lint": "tslint -p tsconfig.json",
     "test": "jest",
     "test:watch": "jest --watch",
