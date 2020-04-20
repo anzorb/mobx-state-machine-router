@@ -1,6 +1,6 @@
 import { observe, intercept } from 'mobx';
 import interceptAsync from 'mobx-async-intercept';
-import MobxStateMachineRouter from '../src';
+import MobxStateMachineRouter, { IMobxStateMachineRouter } from '../src';
 
 const ms = ms => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -58,7 +58,7 @@ describe('init', () => {
       startState: 'HOME',
       query: {}
     });
-    expect(stateMachineRouter.currentState.params.activity).toBe(undefined);
+    expect(Object.keys(stateMachineRouter.currentState.params).length).toBe(0);
   });
 
   it('should allow to create instance with queries and setup observables for them', () => {
@@ -118,7 +118,7 @@ describe('MobX state machine router', () => {
       stateMachineRouter.emit('goToWork');
       stateMachineRouter.emit('slack', { activity: null });
       expect(stateMachineRouter.state).toBe('WORK');
-      expect(stateMachineRouter.currentState.params.activity).toEqual('');
+      expect(stateMachineRouter.currentState.params.activity).toEqual(null);
     });
 
     it('should support child states', () => {
@@ -176,6 +176,47 @@ describe('MobX state machine router', () => {
       expect(listener2).toHaveBeenCalled();
       expect(listener3).toHaveBeenCalled();
     });
+  });
+});
+
+describe.skip('history', () => {
+  it('should allow to go back', () => {
+    const stateMachineRouter: IMobxStateMachineRouter = new MobxStateMachineRouter(
+      {
+        states,
+        startState: 'HOME',
+        query: {
+          activity: null
+        }
+      }
+    );
+    stateMachineRouter.emit('goToWork', { method: 'car' });
+    stateMachineRouter.emit('getFood', {
+      ...stateMachineRouter.currentState.params,
+      method: null
+    });
+    stateMachineRouter.emit('tiredAfterLunchGoHome', {
+      ...stateMachineRouter.currentState.params
+    });
+    // expect(stateMachineRouter.currentState.params).toEqual({
+    //   activity: null,
+    //   method: undefined
+    // });
+    expect(stateMachineRouter.currentState.name).toBe('HOME');
+    stateMachineRouter.emit('goBack');
+    expect(stateMachineRouter.currentState.name).toBe('WORK/LUNCHROOM');
+    // expect(stateMachineRouter.currentState.params).toEqual({
+    //   activity: null,
+    //   method: undefined
+    // });
+    stateMachineRouter.emit('goBack');
+    expect(stateMachineRouter.currentState.name).toBe('WORK');
+    stateMachineRouter.emit('goBack');
+    expect(stateMachineRouter.currentState.name).toBe('HOME');
+    // expect(stateMachineRouter.currentState.params).toEqual({
+    //   activity: null,
+    //   method: 'car'
+    // });
   });
 });
 
