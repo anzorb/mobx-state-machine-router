@@ -144,7 +144,7 @@ class MobxStateMachineRouter implements IMobxStateMachineRouter {
     } else {
       // determine new state to transition to
       newState = transition(this._states, this.state, actionName);
-      newParams = { ...this.currentState.params, ...query };
+      newParams = { ...query };
     }
 
     if (newState != null) {
@@ -201,7 +201,7 @@ class MobxStateMachineRouter implements IMobxStateMachineRouter {
           const route = this._reverseRoutes[name];
           if (route != null) {
             this._setCurrentState({
-              params: { ...query, ...params },
+              params: { ...params },
               name: route
             });
           }
@@ -210,7 +210,7 @@ class MobxStateMachineRouter implements IMobxStateMachineRouter {
       const route = this._reverseRoutes[this.persistence.currentState.name];
       if (route != null) {
         this._setCurrentState({
-          params: { ...query, ...this.persistence.currentState.params },
+          params: { ...this.persistence.currentState.params },
           name: route
         });
       } else {
