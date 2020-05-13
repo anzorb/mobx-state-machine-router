@@ -112,6 +112,15 @@ describe('MobX state machine router', () => {
       expect(stateMachineRouter.currentState.params.activity).toEqual(
         'daydreaming'
       );
+      stateMachineRouter.emit('goHome', {
+        ...stateMachineRouter.currentState.params,
+        method: 'car'
+      });
+      expect(stateMachineRouter.state).toBe('HOME');
+      expect(stateMachineRouter.currentState.params).toEqual({
+        activity: 'daydreaming',
+        method: 'car'
+      });
     });
 
     it('should nullify query params', () => {

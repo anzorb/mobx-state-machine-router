@@ -188,14 +188,14 @@ it('should allow resetting query params', () => {
       persistence
     }
   );
-  stateMachineRouter.emit('goToWork');
+  stateMachineRouter.emit('goToWork', { activity: 'initial' });
   expect(stateMachineRouter.currentState.params.activity).toBe('initial');
   stateMachineRouter.emit('slack', { activity: 'daydreaming' });
   expect(stateMachineRouter.currentState.params.activity).toBe('daydreaming');
   expect(persistence._testURL).toBe('#/work?activity=daydreaming');
-  stateMachineRouter.emit('slack', { activity: null });
+  stateMachineRouter.emit('slack', {});
   expect(persistence._testURL).toBe('#/work');
-  expect(stateMachineRouter.currentState.params.activity).toBe('initial');
+  expect(stateMachineRouter.currentState.params.activity).toBe(undefined);
 });
 
 it("shouldn't initialize with bad state", () => {
@@ -214,7 +214,5 @@ it("shouldn't initialize with bad state", () => {
       persistence
     }
   );
-  expect(stateMachineRouter.currentState.params).toEqual({
-    activity: ''
-  });
+  expect(stateMachineRouter.currentState.params.activity).toEqual(undefined);
 });
