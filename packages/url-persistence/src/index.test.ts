@@ -163,9 +163,7 @@ describe('with URL persistence', () => {
     });
 
     expect(stateMachineRouter.currentState.name).toBe('HOME');
-    expect(stateMachineRouter.currentState.params).toEqual({
-      activity: null
-    });
+    expect(stateMachineRouter.currentState.params).toEqual({});
   });
 
   it('should allow resetting query params', () => {
