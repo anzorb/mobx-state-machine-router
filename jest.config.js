@@ -6,7 +6,9 @@ module.exports = {
     './package*/**/*.{js,ts}',
     '!**/*.test.{js,ts}',
     '!**/lib/**/*',
-    '!**/mock.js'
+    '!**/mock.js',
+    '!**/dist/**/*',
+    '!**/**/jest.config.js',
   ],
 
   coverageDirectory: './coverage',

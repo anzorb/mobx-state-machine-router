@@ -6,6 +6,7 @@ import {
   IReverseRoutes,
   IStates
 } from './types';
+import { assert } from 'console';
 
 const transition = (
   states: IStates,
@@ -26,6 +27,8 @@ const MobxStateMachineRouter = ({
   persistence
 }: IMobxStateMachineRouterParams) => {
   const reverseRoutes: IReverseRoutes = {} as IReverseRoutes;
+
+  assert(states);
 
   const setCurrentState = action((newState: ICurrentState) => {
     API.currentState = {
