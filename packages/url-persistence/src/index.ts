@@ -1,6 +1,6 @@
-import { createHashHistory, History, Location } from 'history';
+import { createHashHistory, History, Location as ILocation } from 'history';
 import { parse, ParsedQuery } from 'query-string';
-import { observable, toJS } from 'mobx';
+import { action, observable, toJS } from 'mobx';
 import { IPersistence, IStates } from '../../core/src';
 
 export interface ICurrentState {
@@ -64,10 +64,19 @@ const URLPersistence = (
   history: History = createHashHistory() as History,
   options?: { serializers?: ISerializers }
 ) => {
+
+  const setStateFromLocation =
+    action((location: ILocation) => {
+      const params = parse(location.search);
+      const name = decodeURIComponent(location.pathname);
+      const paramsObject = deserialize(params, options?.serializers);
+      API.currentState = { name, params: paramsObject };
+    });
+
   const API: IPersistence = observable({
     currentState: {
-      name: decodeURIComponent(window.location.pathname),
-      params: deserialize(parse(window.location.search), options?.serializers),
+      name: '',
+      params: {}
     },
     write: function write(currentState: ICurrentState, states: IStates) {
       const name = states[currentState.name].url;
@@ -75,20 +84,15 @@ const URLPersistence = (
       const paramsString: string = serialize(params, options?.serializers);
 
       const toURL = `${name}${paramsString !== '' ? `?${paramsString}` : ''}`;
-
       if (window.location.hash.split('#')[1] !== toURL) {
         history.push(toURL);
       }
     }
   }, {}, { deep: false });
 
-  history.listen((location: Location) => {
-    const params = parse(location.search);
-    const name = decodeURIComponent(location.pathname);
-    const paramsObject = deserialize(params, options?.serializers);
+  history.listen(setStateFromLocation);
 
-    API.currentState = { name, params: paramsObject };
-  });
+  setStateFromLocation(history.location);
 
   return API;
 };

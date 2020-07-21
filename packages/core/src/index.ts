@@ -113,13 +113,6 @@ const MobxStateMachineRouter = ({
 
   // subscribe to persistence and set currentState
   if (persistence && persistence.currentState != null) {
-    const cleanUpObserve = observe(API, 'currentState', ({ newValue }) => {
-      // if a persistence layer exists, write to it, and expect to resolve internal state as a result
-      if (typeof persistence.write === 'function') {
-        persistence.write(newValue, states);
-      }
-    });
-
     for (const stateName of Object.keys(states)) {
       const route = states[stateName].url;
       reverseRoutes[route!.toLowerCase()] = stateName;
@@ -138,6 +131,13 @@ const MobxStateMachineRouter = ({
       },
       { name: 'persistence-listener' }
     );
+
+    const cleanUpObserve = observe(API, 'currentState', ({ newValue }) => {
+      // if a persistence layer exists, write to it, and expect to resolve internal state as a result
+      if (typeof persistence.write === 'function') {
+        persistence.write(newValue, states);
+      }
+    });
 
     API.destroy = () => {
       cleanUpObserve();
