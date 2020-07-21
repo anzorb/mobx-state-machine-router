@@ -1,7 +1,7 @@
 import { createHashHistory, History, Location } from 'history';
 import { parse, ParsedQuery } from 'query-string';
 import { observable, toJS } from 'mobx';
-import { IPersistence, IStates } from '../../core/src/types';
+import { IPersistence, IStates } from '../../core/src';
 
 export interface ICurrentState {
   name: string;

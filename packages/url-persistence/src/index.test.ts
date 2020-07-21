@@ -1,7 +1,7 @@
 import { observe, intercept, toJS } from 'mobx';
 import { createHashHistory, Location } from 'history';
 import URLPersistence from '.';
-import { IMobxStateMachineRouter } from '../../core/src/types';
+import { IMobxStateMachineRouter } from '../../core/src';
 import MobxStateMachineRouter from '../../core/src';
 
 const ms = ms => new Promise(resolve => setTimeout(resolve, ms));

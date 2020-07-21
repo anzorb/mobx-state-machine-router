@@ -1,7 +1,6 @@
 import { observe, intercept, observable } from 'mobx';
 import interceptAsync from 'mobx-async-intercept';
 import MobxStateMachineRouter from '../src';
-import { emit } from 'process';
 
 const ms = ms => new Promise(resolve => setTimeout(resolve, ms));
 
