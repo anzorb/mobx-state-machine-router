@@ -12,7 +12,7 @@
     "build:watch": "lerna exec -- yarn build --watch",
     "prepare": "yarn run build",
     "prerelease": "yarn run prettier:write && yarn run test:coverage && npm run build",
-    "publish": "lerna publish",
+    "publish": "lerna exec -- np",
     "lint": "tslint -p tsconfig.json",
     "test": "jest",
     "test:watch": "jest --watch",
@@ -34,5 +34,5 @@
     "tslint-config-prettier": "1.18.0",
     "typescript": "^3.8.3"
   },
-  "version": "2.0.1"
+  "version": "3.0.0"
 }
