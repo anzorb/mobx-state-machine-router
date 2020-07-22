@@ -6,9 +6,7 @@ module.exports = {
     './package*/**/*.{js,ts}',
     '!**/*.test.{js,ts}',
     '!**/lib/**/*',
-    '!**/mock.js',
-    '!**/dist/**/*',
-    '!**/**/jest.config.js',
+    '!**/mock.js'
   ],
 
   coverageDirectory: './coverage',
@@ -22,9 +20,9 @@ module.exports = {
   preset: 'ts-jest',
 
   rootDir: __dirname,
-  testEnvironment: 'jsdom',
-  // runner: '@jest-runner/electron',
-  // testEnvironment: '@jest-runner/electron/environment',
+
+  runner: '@jest-runner/electron',
+  testEnvironment: '@jest-runner/electron/environment',
   testURL: 'http://localhost',
 
   testRegex: ['./package.*/.*\\.(test)\\.ts$']

@@ -1,6 +1,6 @@
-import { observe, intercept } from 'mobx';
+import { observe, intercept, observable } from 'mobx';
 import interceptAsync from 'mobx-async-intercept';
-import MobxStateMachineRouter, { IMobxStateMachineRouter } from '../src';
+import MobxStateMachineRouter from '../src';
 
 const ms = ms => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -33,7 +33,7 @@ describe('init', () => {
   });
 
   it('should allow to create instance with null startState or query', () => {
-    const stateMachineRouter = new MobxStateMachineRouter({
+    const stateMachineRouter = MobxStateMachineRouter({
       states
     });
     expect(stateMachineRouter.currentState.name).toBe('HOME');
@@ -41,11 +41,13 @@ describe('init', () => {
   });
 
   it('should allow to create instance with different startStates + validation', () => {
-    const stateMachineRouter = new MobxStateMachineRouter({
+    const stateMachineRouter = MobxStateMachineRouter({
       states,
-      startState: 'AAAH',
-      query: {
-        activity: null
+      currentState: {
+        name: 'AAAH',
+        params: {
+          activity: null
+        }
       }
     });
     expect(stateMachineRouter.currentState.name).not.toBe('AAAH');
@@ -53,24 +55,28 @@ describe('init', () => {
   });
 
   it('should allow to create instance with empty query', () => {
-    const stateMachineRouter = new MobxStateMachineRouter({
+    const stateMachineRouter = MobxStateMachineRouter({
       states,
-      startState: 'HOME',
-      query: {}
+      currentState: {
+        name: 'HOME',
+        params: {}
+      }
     });
     expect(Object.keys(stateMachineRouter.currentState.params).length).toBe(0);
   });
 
   it('should allow to create instance with queries and setup observables for them', () => {
-    const stateMachineRouter = new MobxStateMachineRouter({
+    const stateMachineRouter = MobxStateMachineRouter({
       states,
-      startState: 'HOME',
-      query: {
-        activity: 'biking'
+      currentState: {
+        name: 'HOME',
+        params: {
+          activity: 'biking'
+        }
       }
     });
     const spy = jest.fn();
-    observe(stateMachineRouter.currentState.params, 'activity', spy);
+    observe(stateMachineRouter, 'currentState', spy);
     expect(stateMachineRouter.currentState.params.activity).toBe('biking');
     stateMachineRouter.emit('goToWork', { activity: 'walking' });
     expect(spy).toHaveBeenCalled();
@@ -80,11 +86,13 @@ describe('init', () => {
 describe('MobX state machine router', () => {
   let stateMachineRouter;
   beforeEach(() => {
-    stateMachineRouter = new MobxStateMachineRouter({
+    stateMachineRouter = MobxStateMachineRouter({
       states,
-      startState: 'HOME',
-      query: {
-        activity: ''
+      currentState: {
+        name: 'HOME',
+        params: {
+          activity: ''
+        }
       }
     });
   });
@@ -92,23 +100,24 @@ describe('MobX state machine router', () => {
   afterEach(() => {
     window.location.hash = '';
     jest.clearAllMocks();
+    stateMachineRouter.destroy();
     stateMachineRouter = null;
   });
 
   describe('basics', () => {
     it('should init', () => {
-      expect(stateMachineRouter.state).toBe('HOME');
+      expect(stateMachineRouter.currentState.name).toBe('HOME');
     });
 
     it('should do basic routing', () => {
       stateMachineRouter.emit('goToWork');
-      expect(stateMachineRouter.state).toBe('WORK');
+      expect(stateMachineRouter.currentState.name).toBe('WORK');
     });
 
     it('should update query params', () => {
       stateMachineRouter.emit('goToWork');
       stateMachineRouter.emit('slack', { activity: 'daydreaming' });
-      expect(stateMachineRouter.state).toBe('WORK');
+      expect(stateMachineRouter.currentState.name).toBe('WORK');
       expect(stateMachineRouter.currentState.params.activity).toEqual(
         'daydreaming'
       );
@@ -116,7 +125,7 @@ describe('MobX state machine router', () => {
         ...stateMachineRouter.currentState.params,
         method: 'car'
       });
-      expect(stateMachineRouter.state).toBe('HOME');
+      expect(stateMachineRouter.currentState.name).toBe('HOME');
       expect(stateMachineRouter.currentState.params).toEqual({
         activity: 'daydreaming',
         method: 'car'
@@ -126,14 +135,14 @@ describe('MobX state machine router', () => {
     it('should nullify query params', () => {
       stateMachineRouter.emit('goToWork');
       stateMachineRouter.emit('slack', { activity: null });
-      expect(stateMachineRouter.state).toBe('WORK');
+      expect(stateMachineRouter.currentState.name).toBe('WORK');
       expect(stateMachineRouter.currentState.params.activity).toEqual(null);
     });
 
     it('should support child states', () => {
       stateMachineRouter.emit('goToWork');
       stateMachineRouter.emit('getFood', { coffee: true });
-      expect(stateMachineRouter.state).toBe('WORK/LUNCHROOM');
+      expect(stateMachineRouter.currentState.name).toBe('WORK/LUNCHROOM');
       expect(stateMachineRouter.currentState.params.coffee).toEqual(true);
     });
   });
@@ -142,14 +151,14 @@ describe('MobX state machine router', () => {
     it('should allow us to listen to specific query changes', () => {
       stateMachineRouter.emit('goToWork');
       const listener = jest.fn();
-      observe(stateMachineRouter.currentState.params, 'activity', listener);
+      observe(stateMachineRouter, 'currentState', listener);
       stateMachineRouter.emit('slack', { activity: 'ping-pong' });
       expect(listener).toHaveBeenCalled();
     });
 
     it('should not change state if resulting state does not exist', () => {
       const listener = jest.fn();
-      observe(stateMachineRouter.currentState.params, 'activity', listener);
+      observe(stateMachineRouter, 'currentState', listener);
       stateMachineRouter.emit('slack', { activity: 'ping-pong' });
       expect(stateMachineRouter.currentState.params.activity).toBe('');
       expect(listener).not.toHaveBeenCalled();
@@ -159,7 +168,7 @@ describe('MobX state machine router', () => {
       const listener = jest.fn();
       stateMachineRouter.emit('goToWork');
       stateMachineRouter.emit('slack', { mood: 'need-coffee' });
-      observe(stateMachineRouter.currentState.params, 'mood', listener);
+      observe(stateMachineRouter, 'currentState', listener);
       stateMachineRouter.emit('slack', { mood: 'so-many-jitters' });
       expect(listener).toHaveBeenCalled();
     });
@@ -178,65 +187,26 @@ describe('MobX state machine router', () => {
       const listener3 = jest.fn();
       // subscribe to the whole object
       observe(stateMachineRouter, 'currentState', listener);
-      observe(stateMachineRouter.currentState.params, 'activity', listener2);
-      observe(stateMachineRouter.currentState.params, 'activity', listener3);
+      observe(stateMachineRouter, 'currentState', listener2);
+      observe(stateMachineRouter, 'currentState', listener3);
       stateMachineRouter.emit('slack', { activity: 'sleeping' });
-      expect(listener).not.toHaveBeenCalled();
+      expect(listener).toHaveBeenCalled();
       expect(listener2).toHaveBeenCalled();
       expect(listener3).toHaveBeenCalled();
     });
   });
 });
 
-describe.skip('history', () => {
-  it('should allow to go back', () => {
-    const stateMachineRouter: IMobxStateMachineRouter = new MobxStateMachineRouter(
-      {
-        states,
-        startState: 'HOME',
-        query: {
-          activity: null
-        }
-      }
-    );
-    stateMachineRouter.emit('goToWork', { method: 'car' });
-    stateMachineRouter.emit('getFood', {
-      ...stateMachineRouter.currentState.params,
-      method: null
-    });
-    stateMachineRouter.emit('tiredAfterLunchGoHome', {
-      ...stateMachineRouter.currentState.params
-    });
-    // expect(stateMachineRouter.currentState.params).toEqual({
-    //   activity: null,
-    //   method: undefined
-    // });
-    expect(stateMachineRouter.currentState.name).toBe('HOME');
-    stateMachineRouter.emit('goBack');
-    expect(stateMachineRouter.currentState.name).toBe('WORK/LUNCHROOM');
-    // expect(stateMachineRouter.currentState.params).toEqual({
-    //   activity: null,
-    //   method: undefined
-    // });
-    stateMachineRouter.emit('goBack');
-    expect(stateMachineRouter.currentState.name).toBe('WORK');
-    stateMachineRouter.emit('goBack');
-    expect(stateMachineRouter.currentState.name).toBe('HOME');
-    // expect(stateMachineRouter.currentState.params).toEqual({
-    //   activity: null,
-    //   method: 'car'
-    // });
-  });
-});
-
 describe('intercepting state changes', () => {
   let stateMachineRouter;
   beforeEach(() => {
-    stateMachineRouter = new MobxStateMachineRouter({
+    stateMachineRouter = MobxStateMachineRouter({
       states,
-      startState: 'HOME',
-      query: {
-        activity: null
+      currentState: {
+        name: 'HOME',
+        params: {
+          activity: null
+        }
       }
     });
   });
@@ -244,6 +214,7 @@ describe('intercepting state changes', () => {
   afterEach(() => {
     window.location.hash = '';
     jest.clearAllMocks();
+    stateMachineRouter.destroy();
     stateMachineRouter = null;
   });
 
@@ -285,7 +256,7 @@ describe('intercepting state changes', () => {
     }, 3);
   });
 
-  it('should allow to async intercept to update param', done => {
+  it('should allow to async intercept to update param', async () => {
     interceptAsync(stateMachineRouter, 'currentState', object => {
       return new Promise(resolve => {
         setTimeout(() => {
@@ -299,16 +270,16 @@ describe('intercepting state changes', () => {
         }, 10);
       });
     });
+
     stateMachineRouter.emit('goToWork', { activity: 'slack' });
-    setTimeout(() => {
-      expect(stateMachineRouter.currentState.name).toBe('HOME');
-    }, 0);
-    setTimeout(() => {
-      expect(stateMachineRouter.currentState.name).toBe('WORK');
-      expect(stateMachineRouter.currentState.params.activity).toBe(
-        'working-hard'
-      );
-      done();
-    }, 30);
+    await ms(1);
+
+    expect(stateMachineRouter.currentState.name).toBe('HOME');
+
+    await ms(30);
+    expect(stateMachineRouter.currentState.name).toBe('WORK');
+    expect(stateMachineRouter.currentState.params.activity).toBe(
+      'working-hard'
+    );
   });
 });

@@ -1,68 +1,99 @@
-import {
-  createHashHistory,
-  History,
-  Location,
-  LocationListener
-} from 'history';
-import { parse, stringify, ParsedQuery } from 'query-string';
-import { IStates, IPersistence } from '../../core/src';
-
-const sanitize = (object): object => {
-  const keys = Object.keys(object);
-  const result = {};
-  keys.forEach(key => {
-    if (object[key] != null) {
-      result[key] = object[key];
-    }
-  });
-
-  return result;
-};
+import { createHashHistory, History, Location as ILocation } from 'history';
+import { parse, ParsedQuery } from 'query-string';
+import { action, observable, toJS } from 'mobx';
+import { IPersistence, IStates } from '../../core/src';
 
 export interface ICurrentState {
   name: string;
   params: ParsedQuery;
 }
 
-class URLPersistence implements IPersistence {
-  _history: History = <History>{};
+export interface ISerializers {
+  [key: string]: {
+    getter?: (value: string) => any;
+    setter?: (value: any) => string;
+  };
+};
 
-  listen: (listener: LocationListener<any>) => void;
-
-  _location: Location = <Location>{};
-
-  _testURL: string = '';
-
-  constructor(history: History = <History>createHashHistory()) {
-    this._updateLocation = this._updateLocation.bind(this);
-    this._history = history;
-    this.listen = this._history.listen.bind(this);
-    this._history.listen(this._updateLocation);
-    this._updateLocation(this._history.location);
-  }
-
-  // @action.bound
-  _updateLocation(location: Location) {
-    this._location = location;
-  }
-
-  //  @computed
-  get currentState(): ICurrentState {
-    const params = parse(this._location.search);
-    const name = decodeURIComponent(this._location.pathname);
-
-    return { name, params };
-  }
-
-  write(currentState: ICurrentState, states: IStates) {
-    const name = states[currentState.name].url;
-    const params = sanitize(currentState.params);
-    const paramsString = stringify(params);
-
-    const toURL = `${name}${paramsString !== '' ? `?${paramsString}` : ''}`;
-    this._history.push(toURL);
-    this._testURL = `#${toURL}`;
-  }
+const deserialize = (params, serializers: ISerializers | undefined): object => {
+  const paramsObject = {};
+  Object.keys(params).forEach(key => {
+    if (
+           serializers != null &&
+            serializers[key] != null &&
+            typeof serializers[key].getter === 'function'
+          ) {
+      try {
+        paramsObject[key] = serializers[key].getter!(params[key]);
+      } catch(err) {
+        throw new Error(err);
+      }
+    } else {
+      paramsObject[key] = decodeURI(params[key]);
+    }
+  });
+  return paramsObject;
 }
 
+const serialize = (params, serializers: ISerializers | undefined): string => {
+  let paramsString: string = '';
+  Object.keys(params).forEach(key => {
+    if (params[key] == null) {
+      return;
+    }
+    if (
+            serializers != null &&
+            serializers[key] != null &&
+            typeof serializers[key].setter === 'function'
+          ) {
+      try {
+        paramsString += `${key}=${serializers[key].setter!(params[key])}&`;
+      } catch(err) {
+        throw new Error(err);
+      }
+    } else {
+      paramsString += `${key}=${encodeURI(params[key])}&`;
+    }
+  });
+
+  paramsString = paramsString.substr(0, paramsString.length - 1);
+  return paramsString;
+}
+
+const URLPersistence = (
+  history: History = createHashHistory() as History,
+  options?: { serializers?: ISerializers }
+) => {
+
+  const setStateFromLocation =
+    action((location: ILocation) => {
+      const params = parse(location.search);
+      const name = decodeURIComponent(location.pathname);
+      const paramsObject = deserialize(params, options?.serializers);
+      API.currentState = { name, params: paramsObject };
+    });
+
+  const API: IPersistence = observable({
+    currentState: {
+      name: '',
+      params: {}
+    },
+    write: function write(currentState: ICurrentState, states: IStates) {
+      const name = states[currentState.name].url;
+      const params = { ...toJS(currentState.params) };
+      const paramsString: string = serialize(params, options?.serializers);
+
+      const toURL = `${name}${paramsString !== '' ? `?${paramsString}` : ''}`;
+      if (window.location.hash.split('#')[1] !== toURL) {
+        history.push(toURL);
+      }
+    }
+  }, {}, { deep: false });
+
+  history.listen(setStateFromLocation);
+
+  setStateFromLocation(history.location);
+
+  return API;
+};
 export default URLPersistence;
