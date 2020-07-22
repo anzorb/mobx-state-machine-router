@@ -1,4 +1,11 @@
-import { action, autorun, observable, observe } from 'mobx';
+import {
+  action,
+  observable,
+  observe,
+  Lambda,
+  autorun,
+  IValueDidChange,
+} from 'mobx';
 
 export interface IWriteFn {
   (currentState: ICurrentState, states: IStates);
@@ -60,13 +67,34 @@ const transition = (
   return result;
 };
 
+type TObserveParam = (
+  object: IMobxStateMachineRouter,
+  property: 'currentState',
+  paramName: string,
+  listener: (change: IValueDidChange<ICurrentState>) => void
+) => Lambda;
+
+export const observeParam: TObserveParam = (
+  object,
+  property,
+  paramName,
+  listener
+) => {
+  return observe(object, property, (change) => {
+    const { newValue, oldValue } = change;
+    if (newValue.params[paramName] !== oldValue?.params[paramName]) {
+      listener(change);
+    }
+  });
+};
+
 const MobxStateMachineRouter = ({
   states,
   currentState = {
     name: 'HOME',
-    params: {}
+    params: {},
   },
-  persistence
+  persistence,
 }: IMobxStateMachineRouterParams) => {
   const reverseRoutes: IReverseRoutes = {} as IReverseRoutes;
 
@@ -75,7 +103,7 @@ const MobxStateMachineRouter = ({
       name: states[newState.name]
         ? newState.name
         : API.currentState.name || Object.keys(states)[0],
-      params: newState.params
+      params: newState.params,
     };
   });
 
@@ -87,7 +115,7 @@ const MobxStateMachineRouter = ({
           Object.keys(states).includes(currentState.name)
             ? currentState.name
             : Object.keys(states)[0],
-        params: currentState.params || {}
+        params: currentState.params || {},
       },
       emit: action((actionName: string, params: object = {}) => {
         let newState;
@@ -99,13 +127,13 @@ const MobxStateMachineRouter = ({
         if (newState != null) {
           setCurrentState({
             name: newState,
-            params: newParams
+            params: newParams,
           });
         }
       }),
       destroy() {
         return void 0;
-      }
+      },
     },
     {},
     { deep: false }
@@ -125,7 +153,7 @@ const MobxStateMachineRouter = ({
         if (route != null) {
           setCurrentState({
             name: route,
-            params
+            params,
           });
         }
       },
@@ -146,7 +174,7 @@ const MobxStateMachineRouter = ({
   } else {
     setCurrentState({
       name: currentState.name || Object.keys(states)[0],
-      params: currentState.params || {}
+      params: currentState.params || {},
     });
   }
 

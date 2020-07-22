@@ -60,7 +60,7 @@ const states = {
     'HOME': {
         actions: {
             goToWork: 'WORK'
-        }
+        },
     },
     'WORK': {
         actions: {
@@ -73,13 +73,16 @@ stateMachineRouter.emit('goToWork');
 
 console.log(stateMachineRouter.currentState.name);
 > 'WORK'
+
+stateMachineRouter.emit('goToWork');
+> 'WORK' // ==> nothing happens here because we only allow the HOME state to emit the "goToWork" action
 ```
 
 ---
 
 ### Passing Params
 
-All params are passed as mobx observables, allowing to `observe` and `intercept` them. Both the `currentState` object as well as individual params can be observed.
+State params can be passed in as follows:
 
 ```js
 
@@ -98,35 +101,48 @@ console.log(stateMachineRouter.currentState);
 
 ### Observing state changes
 
+Observing state changes is done using mobx's `observe`, and more granularly using `observeParam`:
+
 ```js
+import { observe } from 'mobx';
+import { observeParam } from '@mobx-state-machine-router/core';
+
 observe(stateMachineRouter, 'currentState', () => {});
-observe(stateMachineRouter.currentState.params, 'method', () => {});
+observeParam(stateMachineRouter, 'currentState', 'method', () => {});
 ```
 
 ---
 
 ### Intercepting state changes
 
+Intercepting state changes can be used to either redirect to a different state, or do nothing (`return null`);
+
+Here's an example of a synchronous intercept:
+
 ```js
+import { intercept } from 'mobx';
+
 // reject state change
-intercept(stateMachineRouter, 'currentState', object => {
+intercept(stateMachineRouter, 'currentState', (change) => {
   if (!loggedOut) {
-    return { ...object, newValue: { name: 'LOGIN' } };
+    return { ...change, newValue: { name: 'LOGIN' } };
   }
-  return object;
+  return change;
 });
 ```
+
+Here's an example of a asynchronous intercept:
 
 ```js
 import interceptAsync from 'mobx-intercept-async';
 
 // reject state change
-interceptAsync(stateMachineRouter, 'currentState', async object => {
+interceptAsync(stateMachineRouter, 'currentState', async (change) => {
   // log user in
-  if (await login(object.newValue.params.userId)) {
-    return object;
+  if (await login(userId)) {
+    return change;
   }
-  return { ...object, newValue: { name: 'LOGIN_ERROR' } };
+  return { ...change, newValue: { name: 'LOGIN_ERROR' } };
 });
 ```
 

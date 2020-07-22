@@ -1,6 +1,7 @@
 import { observe, intercept, observable } from 'mobx';
 import interceptAsync from 'mobx-async-intercept';
 import MobxStateMachineRouter from '../src';
+import { observeParam } from './index';
 
 const ms = ms => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -183,16 +184,16 @@ describe('MobX state machine router', () => {
     it('should emit correct updates', () => {
       stateMachineRouter.emit('goToWork');
       const listener = jest.fn();
-      const listener2 = jest.fn();
-      const listener3 = jest.fn();
-      // subscribe to the whole object
       observe(stateMachineRouter, 'currentState', listener);
-      observe(stateMachineRouter, 'currentState', listener2);
-      observe(stateMachineRouter, 'currentState', listener3);
       stateMachineRouter.emit('slack', { activity: 'sleeping' });
       expect(listener).toHaveBeenCalled();
-      expect(listener2).toHaveBeenCalled();
-      expect(listener3).toHaveBeenCalled();
+    });
+
+    it('should allow observing individual params', () => {
+      const spy = jest.fn();
+      observeParam(stateMachineRouter, 'currentState', 'activity', spy);
+      stateMachineRouter.emit('goToWork', { activity: 'crawling' });
+      expect(spy).toHaveBeenCalled();
     });
   });
 });
