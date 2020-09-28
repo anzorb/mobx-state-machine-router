@@ -10,19 +10,31 @@
 
 ### How it works
 
-- A State Map is defined with a set of states and their actions:
-  ```js
-  {
-    'HOME': {
-        actions: {
-            goToWork: 'WORK'
-        }
+- A State Map is defined with a set of states and their actions (example in typescript):
+
+  ```typescript
+  const states: TStates<STATE, ACTION> = {
+    [STATE.HOME]: {
+      actions: {
+        [ACTION.goToWork]: STATE.WORK,
+        [ACTION.clean]: STATE.HOME,
+      },
+      url: '/',
     },
-    'WORK': {...
+    [STATE.WORK]: {
+      actions: {
+        [ACTION.goHome]: STATE.HOME,
+        [ACTION.slack]: STATE.WORK,
+        [ACTION.getFood]: STATE['WORK/LUNCHROOM'],
+      },
+      url: '/work',
+    },
+  };
   ```
+
 - Emitting an action produces a new state
-  ```
-  emit(actionName: string, query: object = {})
+  ```typescript
+  IMobxStateMachineRouter<STATE, PARAM, ACTION>.emit: (actionName: ACTION, params?: PARAM | undefined) => void
   ```
 - Components are re-rendered automatically thanks to Mobx' `Observer` HOC and `@observer` decorator
 - Side Effects can also happen when state/params change using React's `useEffect()`, `mobx.observe()` or `mobx.autorun()`
@@ -55,27 +67,47 @@ yarn add @mobx-state-machine-router/core
 
 ### Basics
 
-```js
-const states = {
-    'HOME': {
-        actions: {
-            goToWork: 'WORK'
-        },
-    },
-    'WORK': {
-        actions: {
-            goHome: 'HOME'
-        }
-    }
+```typescript
+enum STATE {
+  HOME = 'HOME',
+  WORK = 'WORK'
+}
+
+enum ACTION {
+  goToWork = 'goToWork',
+  clean = 'clean',
+  slack = 'slack',
+  ...
+}
+
+type TParams = {
+  activity?: string | null;
 };
 
-stateMachineRouter.emit('goToWork');
+const states: TStates<STATE, ACTION> = {
+  [STATE.HOME]: {
+    actions: {
+      [ACTION.goToWork]: STATE.WORK,
+      [ACTION.clean]: STATE.HOME,
+    },
+    url: '/', // specify URL if using URLPersistence package
+  },
+  [STATE.WORK]: {
+    actions: {
+      [ACTION.goHome]: STATE.HOME,
+      [ACTION.slack]: STATE.WORK,
+    },
+    url: '/work', // specify URL if using URLPersistence package
+  }
+};
+
+stateMachineRouter.emit(ACTION.goToWork);
 
 console.log(stateMachineRouter.currentState.name);
 > 'WORK'
 
-stateMachineRouter.emit('goToWork');
-> 'WORK' // ==> nothing happens here because we only allow the HOME state to emit the "goToWork" action
+stateMachineRouter.emit(ACTION.goToWork);
+> 'WORK' // ==> ignored as only the HOME state is allowed to "goToWork"
 ```
 
 ---
@@ -86,7 +118,7 @@ State params can be passed in as follows:
 
 ```js
 
-stateMachineRouter.emit('goToWork', { method: 'car' });
+stateMachineRouter.emit(ACTION.goToWork, { method: 'car' });
 
 console.log(stateMachineRouter.currentState);
 {
@@ -125,7 +157,7 @@ import { intercept } from 'mobx';
 // reject state change
 intercept(stateMachineRouter, 'currentState', (change) => {
   if (!loggedOut) {
-    return { ...change, newValue: { name: 'LOGIN' } };
+    return { ...change, newValue: { name: STATE.LOGIN } };
   }
   return change;
 });
@@ -142,7 +174,7 @@ interceptAsync(stateMachineRouter, 'currentState', async (change) => {
   if (await login(userId)) {
     return change;
   }
-  return { ...change, newValue: { name: 'LOGIN_ERROR' } };
+  return { ...change, newValue: { name: STATE.LOGIN_ERROR } };
 });
 ```
 
@@ -160,8 +192,8 @@ export const App = observer(() => {
 
   return (
     <>
-    { currentState.name === 'home' && <Home> }
-    { currentState.name === 'about' && <About> }
+    { currentState.name === STATE.HOME && <Home> }
+    { currentState.name === STATE.ABOUT && <About> }
     </>
   )
 });
