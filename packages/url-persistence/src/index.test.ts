@@ -246,7 +246,7 @@ type TParams2 = TParams & {
 describe('custom getters/setters - boolean', () => {
   let persistence, stateMachineRouter;
   beforeEach(() => {
-    persistence = URLPersistence(createHashHistory(), {
+    persistence = URLPersistence<STATE, TParams2, ACTION>(createHashHistory(), {
       serializers: {
         bored: {
           getter(value) {

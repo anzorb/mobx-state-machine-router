@@ -49,8 +49,6 @@
 - URL persistence is optional and separate
 - First class React Native support
 
----
-
 ### Installation
 
 ```js
@@ -62,8 +60,6 @@ or
 ```js
 yarn add @mobx-state-machine-router/core
 ```
-
----
 
 ### Basics
 
@@ -101,6 +97,17 @@ const states: TStates<STATE, ACTION> = {
   }
 };
 
+// initialize router
+const stateMachineRouter = MobxStateMachineRouter<STATE, TParams, ACTION>({
+  states,
+  currentState: {
+    name: STATE.HOME,
+    params: {
+      activity: null,
+    },
+  },
+});
+
 stateMachineRouter.emit(ACTION.goToWork);
 
 console.log(stateMachineRouter.currentState.name);
@@ -109,8 +116,6 @@ console.log(stateMachineRouter.currentState.name);
 stateMachineRouter.emit(ACTION.goToWork);
 > 'WORK' // ==> ignored as only the HOME state is allowed to "goToWork"
 ```
-
----
 
 ### Passing Params
 
@@ -129,8 +134,6 @@ console.log(stateMachineRouter.currentState);
 }
 ```
 
----
-
 ### Observing state changes
 
 Observing state changes is done using mobx's `observe`, and more granularly using `observeParam`:
@@ -142,8 +145,6 @@ import { observeParam } from '@mobx-state-machine-router/core';
 observe(stateMachineRouter, 'currentState', () => {});
 observeParam(stateMachineRouter, 'currentState', 'method', () => {});
 ```
-
----
 
 ### Intercepting state changes
 
@@ -178,8 +179,6 @@ interceptAsync(stateMachineRouter, 'currentState', async (change) => {
 });
 ```
 
----
-
 ### Rendering UI Elements
 
 The Router can be accessed in using React's Context API or other means. Components wrapped in observer will re-render whenever state changes.
@@ -196,5 +195,26 @@ export const App = observer(() => {
     { currentState.name === STATE.ABOUT && <About> }
     </>
   )
+});
+```
+
+### Persistence
+
+1. Install:
+
+`yarn add @mobx-state-machine-router/url-persistence history`
+
+2. Initialize with your choice of `history`
+
+```typescript
+const stateMachineRouter = MobxStateMachineRouter<STATE, TParams, ACTION>({
+  states,
+  currentState: {
+    name: STATE.HOME,
+    params: {
+      activity: null,
+    },
+  },
+  persistence: URLPersistence<STATE, TParams2, ACTION>(createHashHistory()),
 });
 ```
