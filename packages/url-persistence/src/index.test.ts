@@ -1,35 +1,56 @@
 import { observe, intercept, toJS } from 'mobx';
 import { createHashHistory, Location } from 'history';
 import URLPersistence from '.';
-import { IMobxStateMachineRouter } from '../../core/src';
+import { IMobxStateMachineRouter, TStates } from '../../core/src';
 import MobxStateMachineRouter from '../../core/src';
 
-const ms = ms => new Promise(resolve => setTimeout(resolve, ms));
+const ms = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const states = {
-  HOME: {
+enum STATE {
+  HOME = 'HOME',
+  WORK = 'WORK',
+  'WORK/LUNCHROOM' = 'WORK/LUNCHROOM',
+}
+
+enum ACTION {
+  goToWork = 'goToWork',
+  clean = 'clean',
+  slack = 'slack',
+  goHome = 'goHome',
+  getFood = 'getFood',
+  eat = 'eat',
+  backToWork = 'backToWork',
+  tiredAfterLunchGoHome = 'tiredAfterLunchGoHome',
+}
+
+type TParams = {
+  activity?: string | null;
+};
+
+const states: TStates<STATE, ACTION> = {
+  [STATE.HOME]: {
     actions: {
-      goToWork: 'WORK',
-      clean: 'HOME'
+      [ACTION.goToWork]: STATE.WORK,
+      [ACTION.clean]: STATE.HOME,
     },
-    url: '/'
+    url: '/',
   },
-  WORK: {
+  [STATE.WORK]: {
     actions: {
-      goHome: 'HOME',
-      slack: 'WORK',
-      getFood: 'WORK/LUNCHROOM'
+      [ACTION.goHome]: STATE.HOME,
+      [ACTION.slack]: STATE.WORK,
+      [ACTION.getFood]: STATE['WORK/LUNCHROOM'],
     },
-    url: '/work'
+    url: '/work',
   },
-  'WORK/LUNCHROOM': {
+  [STATE['WORK/LUNCHROOM']]: {
     actions: {
-      eat: 'WORK/LUNCHROOM',
-      backToWork: 'WORK',
-      tiredAfterLunchGoHome: 'HOME'
+      [ACTION.eat]: STATE['WORK/LUNCHROOM'],
+      [ACTION.backToWork]: STATE.WORK,
+      [ACTION.tiredAfterLunchGoHome]: STATE.HOME,
     },
-    url: '/work/lunchroom'
-  }
+    url: '/work/lunchroom',
+  },
 };
 
 describe('URL Persistence', () => {
@@ -51,8 +72,8 @@ describe('URL Persistence', () => {
       name: '/hello',
       params: {
         what: 'world',
-        where: 'bla'
-      }
+        where: 'bla',
+      },
     });
   });
 
@@ -62,13 +83,13 @@ describe('URL Persistence', () => {
         name: 'new',
         params: {
           hola: 'amigos',
-          this: 'is'
-        }
+          this: 'is',
+        },
       },
       {
         new: {
-          url: '/new'
-        }
+          url: '/new',
+        },
       }
     );
     expect(window.location.hash).toEqual('#/new?hola=amigos&this=is');
@@ -87,15 +108,15 @@ describe('with URL persistence', () => {
   let persistence;
   beforeEach(() => {
     persistence = URLPersistence(createHashHistory());
-    stateMachineRouter = MobxStateMachineRouter({
+    stateMachineRouter = MobxStateMachineRouter<STATE, TParams, ACTION>({
       states,
       currentState: {
-        name: 'HOME',
+        name: STATE.HOME,
         params: {
-          activity: null
-        }
+          activity: null,
+        },
       },
-      persistence
+      persistence,
     });
   });
 
@@ -108,17 +129,17 @@ describe('with URL persistence', () => {
 
   it('should do basic routing', () => {
     persistence = URLPersistence(createHashHistory());
-    stateMachineRouter = MobxStateMachineRouter({
+    stateMachineRouter = MobxStateMachineRouter<STATE, TParams, ACTION>({
       states,
       currentState: {
-        name: 'HOME',
+        name: STATE.HOME,
         params: {
-          activity: null
-        }
+          activity: null,
+        },
       },
-      persistence
+      persistence,
     });
-    stateMachineRouter.emit('goToWork');
+    stateMachineRouter.emit(ACTION.goToWork);
     expect(window.location.hash).toBe('#/work');
   });
 
@@ -131,35 +152,35 @@ describe('with URL persistence', () => {
   });
 
   it('should update query params', () => {
-    stateMachineRouter.emit('goToWork');
-    stateMachineRouter.emit('slack', { activity: 'daydreaming' });
+    stateMachineRouter.emit(ACTION.goToWork);
+    stateMachineRouter.emit(ACTION.slack, { activity: 'daydreaming' });
     expect(window.location.hash).toBe('#/work?activity=daydreaming');
   });
 
   it('should nullify query params', () => {
-    stateMachineRouter.emit('goToWork');
-    stateMachineRouter.emit('slack', { activity: null });
+    stateMachineRouter.emit(ACTION.goToWork);
+    stateMachineRouter.emit(ACTION.slack, { activity: null });
     expect(window.location.hash).toBe('#/work');
   });
 
   it('should support child states', () => {
-    stateMachineRouter.emit('goToWork');
-    stateMachineRouter.emit('getFood', { coffee: true });
+    stateMachineRouter.emit(ACTION.goToWork);
+    stateMachineRouter.emit(ACTION.getFood, { coffee: true });
     expect(window.location.hash).toBe('#/work/lunchroom?coffee=true');
   });
 
   it('should invalid starting urls', () => {
-    const persistence = URLPersistence(createHashHistory());
+    const persistence = URLPersistence<STATE, TParams, ACTION>(createHashHistory());
     window.location.hash = '#/invalid?what=world&where=bla';
-    const stateMachineRouter: IMobxStateMachineRouter = MobxStateMachineRouter({
+    const stateMachineRouter = MobxStateMachineRouter<STATE, TParams, ACTION>({
       states,
       currentState: {
-        name: 'HOME',
+        name: STATE.HOME,
         params: {
-          activity: null
-        }
+          activity: null,
+        },
       },
-      persistence
+      persistence,
     });
 
     expect(stateMachineRouter.currentState.name).toBe('HOME');
@@ -167,43 +188,43 @@ describe('with URL persistence', () => {
   });
 
   it('should allow resetting query params', () => {
-    const persistence = URLPersistence(createHashHistory());
+    const persistence = URLPersistence<STATE, TParams, ACTION>(createHashHistory());
     window.location.hash = '#/invalid?what=world&where=bla';
-    const stateMachineRouter: IMobxStateMachineRouter = MobxStateMachineRouter({
+    const stateMachineRouter = MobxStateMachineRouter<STATE, TParams, ACTION>({
       states,
       currentState: {
-        name: 'HOME',
+        name: STATE.HOME,
         params: {
-          activity: 'initial'
-        }
+          activity: 'initial',
+        },
       },
-      persistence
+      persistence,
     });
-    stateMachineRouter.emit('goToWork', { activity: 'initial' });
+    stateMachineRouter.emit(ACTION.goToWork, { activity: 'initial' });
     expect(stateMachineRouter.currentState.params.activity).toBe('initial');
-    stateMachineRouter.emit('slack', { activity: 'daydreaming' });
+    stateMachineRouter.emit(ACTION.slack, { activity: 'daydreaming' });
     expect(stateMachineRouter.currentState.params.activity).toBe('daydreaming');
     expect(window.location.hash).toBe('#/work?activity=daydreaming');
-    stateMachineRouter.emit('slack', {});
+    stateMachineRouter.emit(ACTION.slack, {});
     expect(window.location.hash).toBe('#/work');
     expect(stateMachineRouter.currentState.params.activity).toBe(undefined);
   });
 
   it('should allow intecepting of state, which in turn doesn not set the URL', () => {
-    const persistence = URLPersistence(createHashHistory());
+    const persistence = URLPersistence<STATE, TParams, ACTION>(createHashHistory());
     window.location.hash = '#/';
-    const stateMachineRouter: IMobxStateMachineRouter = MobxStateMachineRouter({
+    const stateMachineRouter = MobxStateMachineRouter<STATE, TParams, ACTION>({
       states,
       currentState: {
-        name: 'HOME',
+        name: STATE.HOME,
         params: {
-          activity: null
-        }
+          activity: null,
+        },
       },
-      persistence
+      persistence,
     });
 
-    stateMachineRouter.emit('goToWork', { activity: 'kayaking' });
+    stateMachineRouter.emit(ACTION.goToWork, { activity: 'kayaking' });
     expect(window.location.hash).toBe('#/work?activity=kayaking');
     expect(stateMachineRouter.currentState.params.activity).toEqual('kayaking');
     expect(stateMachineRouter.currentState.name).toEqual('WORK');
@@ -211,17 +232,21 @@ describe('with URL persistence', () => {
       return null;
     });
 
-    stateMachineRouter.emit('goHome', { activity: 'walking' });
+    stateMachineRouter.emit(ACTION.goHome, { activity: 'walking' });
     expect(stateMachineRouter.currentState.params.activity).toEqual('kayaking');
     expect(stateMachineRouter.currentState.name).toEqual('WORK');
     expect(window.location.hash).toEqual('#/work?activity=kayaking');
   });
 });
 
+type TParams2 = TParams & {
+  bored?: string | null;
+};
+
 describe('custom getters/setters - boolean', () => {
   let persistence, stateMachineRouter;
   beforeEach(() => {
-    persistence = URLPersistence(createHashHistory(), {
+    persistence = URLPersistence<STATE, TParams2, ACTION>(createHashHistory(), {
       serializers: {
         bored: {
           getter(value) {
@@ -229,20 +254,20 @@ describe('custom getters/setters - boolean', () => {
           },
           setter(value) {
             return value.toString();
-          }
-        }
-      }
+          },
+        },
+      },
     });
-    stateMachineRouter = MobxStateMachineRouter({
+    stateMachineRouter = MobxStateMachineRouter<STATE, TParams2, ACTION>({
       states,
       currentState: {
-        name: 'HOME',
+        name: STATE.HOME,
         params: {
           activity: null,
-          bored: null
-        }
+          bored: null,
+        },
       },
-      persistence
+      persistence,
     });
   });
 
@@ -253,7 +278,7 @@ describe('custom getters/setters - boolean', () => {
   });
 
   it('should allow users to specify custom serializer', () => {
-    stateMachineRouter.emit('goToWork', { bored: true });
+    stateMachineRouter.emit(ACTION.goToWork, { bored: true });
     expect(window.location.hash).toBe('#/work?bored=true');
   });
 
@@ -275,19 +300,23 @@ describe('custom getters/setters - array', () => {
           },
           setter(value: []) {
             return encodeURI(JSON.stringify(value));
-          }
-        }
-      }
+          },
+        },
+      },
     });
-    stateMachineRouter = MobxStateMachineRouter({
+    stateMachineRouter = MobxStateMachineRouter<
+      STATE,
+      TParams,
+      ACTION
+    >({
       states,
       currentState: {
-        name: 'HOME',
+        name: STATE.HOME,
         params: {
-          activity: null
-        }
+          activity: null,
+        },
       },
-      persistence
+      persistence,
     });
   });
 
@@ -298,7 +327,7 @@ describe('custom getters/setters - array', () => {
   });
 
   it('should allow users to specify custom serializer', () => {
-    stateMachineRouter.emit('goToWork', { activity: ['bus', 'walking'] });
+    stateMachineRouter.emit(ACTION.goToWork, { activity: ['bus', 'walking'] });
     expect(window.location.hash).toBe(
       '#/work?activity=%5B%22bus%22,%22walking%22%5D'
     );
@@ -309,7 +338,7 @@ describe('custom getters/setters - array', () => {
     await ms(10);
     expect(stateMachineRouter.currentState.params.activity).toEqual([
       'bus',
-      'walking'
+      'walking',
     ]);
   });
 });

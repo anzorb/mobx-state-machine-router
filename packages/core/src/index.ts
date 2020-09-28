@@ -2,139 +2,131 @@ import {
   action,
   observable,
   observe,
-  Lambda,
   autorun,
   IValueDidChange,
 } from 'mobx';
 
-export interface IWriteFn {
-  (currentState: ICurrentState, states: IStates);
+enum STATE {
+  HOME = 'HOME',
 }
 
-export interface IPersistence {
-  currentState: ICurrentState;
-  write: IWriteFn;
+export interface IWriteFn<S extends string, P, A extends string> {
+  (currentState: ICurrentState<S, P>, states: TStates<S, A>);
 }
 
-export interface IActions {
-  [actionName: string]: string;
+export interface IPersistence<S extends string, P, A extends string> {
+  currentState: ICurrentState<S, P>;
+  write: IWriteFn<S, P, A>;
 }
 
-export interface IState {
-  actions: IActions;
-  url?: string;
-}
-
-export interface IStates {
-  [stateName: string]: IState;
-}
-
-export interface IQuery {
-  [param: string]: any;
-}
-
-export interface IMobxStateMachineRouterParams {
-  states: IStates;
-  currentState?: {
-    name?: string;
-    params?: IQuery;
+export type TStates<E extends string, A extends string> = {
+  [name in E]: {
+    actions: {
+      [action in A]?: E;
+    };
+    url?: string;
   };
-  persistence?: IPersistence;
+};
+
+export interface IMobxStateMachineRouterParams<
+  S extends string,
+  P,
+  A extends string
+> {
+  states: TStates<S, A>;
+  currentState?: {
+    name?: S;
+    params?: P;
+  };
+  persistence?: IPersistence<S, P, A>;
 }
 
 export interface IReverseRoutes {
   [param: string]: string;
 }
 
-export interface ICurrentState {
-  name: string;
-  params: IQuery;
+export interface ICurrentState<S, P> {
+  name: S;
+  params: P;
 }
 
-export interface IMobxStateMachineRouter {
-  currentState: ICurrentState;
-  emit: (actionName: string, params?: object) => void;
+export interface IMobxStateMachineRouter<S, P, A> {
+  currentState: ICurrentState<S, P>;
+  emit: (actionName: A, params?: P) => void;
   destroy: () => void;
 }
 
-const transition = (
-  states: IStates,
-  curState: string,
-  actionName: string
-): string => {
+function transition<S extends string, A extends string>(
+  states: TStates<S, A>,
+  curState: S,
+  actionName: A
+) {
   const result = states[curState].actions[actionName];
 
-  return result;
-};
+  return result as S;
+}
 
-type TObserveParam = (
-  object: IMobxStateMachineRouter,
+export function observeParam<S, P, A>(
+  object: IMobxStateMachineRouter<S, P, A>,
   property: 'currentState',
   paramName: string,
-  listener: (change: IValueDidChange<ICurrentState>) => void
-) => Lambda;
-
-export const observeParam: TObserveParam = (
-  object,
-  property,
-  paramName,
-  listener
-) => {
+  listener: (change: IValueDidChange<ICurrentState<S, P>>) => void
+) {
   return observe(object, property, (change) => {
     const { newValue, oldValue } = change;
     if (newValue.params[paramName] !== oldValue?.params[paramName]) {
       listener(change);
     }
   });
-};
+}
 
-const MobxStateMachineRouter = ({
+function MobxStateMachineRouter<S extends string, P, A extends string>({
   states,
   currentState = {
-    name: 'HOME',
-    params: {},
+    name: STATE.HOME as S,
+    params: undefined,
   },
   persistence,
-}: IMobxStateMachineRouterParams) => {
+}: IMobxStateMachineRouterParams<S, P, A>) {
   const reverseRoutes: IReverseRoutes = {} as IReverseRoutes;
 
-  const setCurrentState = action((newState: ICurrentState) => {
+  const setCurrentState = action((newState: ICurrentState<S, P>) => {
     API.currentState = {
       name: states[newState.name]
         ? newState.name
-        : API.currentState.name || Object.keys(states)[0],
+        : API.currentState.name || (Object.keys(states)[0] as S),
       params: newState.params,
     };
   });
 
-  const API: IMobxStateMachineRouter = observable(
+  const API = observable(
     {
       currentState: {
         name:
           currentState.name != null &&
           Object.keys(states).includes(currentState.name)
             ? currentState.name
-            : Object.keys(states)[0],
-        params: currentState.params || {},
+            : (Object.keys(states)[0] as S),
+        params: currentState.params || ({} as P),
       },
-      emit: action((actionName: string, params: object = {}) => {
+      emit: action((actionName, params) => {
         let newState;
         let newParams = {};
         // determine new state to transition to
-        newState = transition(states, API.currentState.name, actionName);
+        newState = transition<S, A>(states, API.currentState.name, actionName);
         newParams = { ...params };
 
         if (newState != null) {
           setCurrentState({
             name: newState,
-            params: newParams,
+            params: newParams as P,
           });
         }
       }),
       destroy() {
         return void 0;
       },
-    },
+    } as IMobxStateMachineRouter<S, P, A>,
     {},
     { deep: false }
   );
@@ -152,7 +144,7 @@ const MobxStateMachineRouter = ({
         const route = reverseRoutes[name];
         if (route != null) {
           setCurrentState({
-            name: route,
+            name: route as S,
             params,
           });
         }
@@ -163,22 +155,23 @@ const MobxStateMachineRouter = ({
     const cleanUpObserve = observe(API, 'currentState', ({ newValue }) => {
       // if a persistence layer exists, write to it, and expect to resolve internal state as a result
       if (typeof persistence.write === 'function') {
-        persistence.write(newValue, states);
+        persistence.write(newValue as ICurrentState<S, P>, states);
       }
     });
 
     API.destroy = () => {
       cleanUpObserve();
       cleanUpAutorun();
+      return void 0;
     };
   } else {
     setCurrentState({
-      name: currentState.name || Object.keys(states)[0],
-      params: currentState.params || {},
+      name: currentState.name || (Object.keys(states)[0] as S),
+      params: currentState.params || ({} as P),
     });
   }
 
   return API;
-};
+}
 
 export default MobxStateMachineRouter;
