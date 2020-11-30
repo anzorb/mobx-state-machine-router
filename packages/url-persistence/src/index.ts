@@ -29,7 +29,7 @@ const deserialize = (params, serializers: ISerializers | undefined): object => {
         throw new Error(err);
       }
     } else {
-      paramsObject[key] = decodeURI(params[key]);
+      paramsObject[key] = decodeURIComponent(params[key]);
     }
   });
   return paramsObject;
@@ -52,7 +52,7 @@ const serialize = (params, serializers: ISerializers | undefined): string => {
         throw new Error(err);
       }
     } else {
-      paramsString += `${key}=${encodeURI(params[key])}&`;
+      paramsString += `${key}=${encodeURIComponent(params[key])}&`;
     }
   });
 
@@ -68,7 +68,10 @@ function URLPersistence<S extends string, P, A extends string>(
     const params = parse(location.search);
     const name = decodeURIComponent(location.pathname);
     const paramsObject = deserialize(params, options?.serializers);
-    API.currentState = { name: name as S, params: <unknown>paramsObject as P };
+    API.currentState = {
+      name: name as S,
+      params: (<unknown>paramsObject) as P,
+    };
   });
 
   const API = observable(
