@@ -4,32 +4,32 @@ import URLPersistence from '.';
 import { IMobxStateMachineRouter } from '../../core/src';
 import MobxStateMachineRouter from '../../core/src';
 
-const ms = ms => new Promise(resolve => setTimeout(resolve, ms));
+const ms = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const states = {
   HOME: {
     actions: {
       goToWork: 'WORK',
-      clean: 'HOME'
+      clean: 'HOME',
     },
-    url: '/'
+    url: '/',
   },
   WORK: {
     actions: {
       goHome: 'HOME',
       slack: 'WORK',
-      getFood: 'WORK/LUNCHROOM'
+      getFood: 'WORK/LUNCHROOM',
     },
-    url: '/work'
+    url: '/work',
   },
   'WORK/LUNCHROOM': {
     actions: {
       eat: 'WORK/LUNCHROOM',
       backToWork: 'WORK',
-      tiredAfterLunchGoHome: 'HOME'
+      tiredAfterLunchGoHome: 'HOME',
     },
-    url: '/work/lunchroom'
-  }
+    url: '/work/lunchroom',
+  },
 };
 
 describe('URL Persistence', () => {
@@ -51,8 +51,8 @@ describe('URL Persistence', () => {
       name: '/hello',
       params: {
         what: 'world',
-        where: 'bla'
-      }
+        where: 'bla',
+      },
     });
   });
 
@@ -62,13 +62,13 @@ describe('URL Persistence', () => {
         name: 'new',
         params: {
           hola: 'amigos',
-          this: 'is'
-        }
+          this: 'is',
+        },
       },
       {
         new: {
-          url: '/new'
-        }
+          url: '/new',
+        },
       }
     );
     expect(window.location.hash).toEqual('#/new?hola=amigos&this=is');
@@ -92,10 +92,10 @@ describe('with URL persistence', () => {
       currentState: {
         name: 'HOME',
         params: {
-          activity: null
-        }
+          activity: null,
+        },
       },
-      persistence
+      persistence,
     });
   });
 
@@ -113,10 +113,10 @@ describe('with URL persistence', () => {
       currentState: {
         name: 'HOME',
         params: {
-          activity: null
-        }
+          activity: null,
+        },
       },
-      persistence
+      persistence,
     });
     stateMachineRouter.emit('goToWork');
     expect(window.location.hash).toBe('#/work');
@@ -173,10 +173,10 @@ describe('with URL persistence', () => {
       currentState: {
         name: 'HOME',
         params: {
-          activity: null
-        }
+          activity: null,
+        },
       },
-      persistence
+      persistence,
     });
 
     expect(stateMachineRouter.currentState.name).toBe('HOME');
@@ -191,10 +191,10 @@ describe('with URL persistence', () => {
       currentState: {
         name: 'HOME',
         params: {
-          activity: 'initial'
-        }
+          activity: 'initial',
+        },
       },
-      persistence
+      persistence,
     });
     stateMachineRouter.emit('goToWork', { activity: 'initial' });
     expect(stateMachineRouter.currentState.params.activity).toBe('initial');
@@ -214,10 +214,10 @@ describe('with URL persistence', () => {
       currentState: {
         name: 'HOME',
         params: {
-          activity: null
-        }
+          activity: null,
+        },
       },
-      persistence
+      persistence,
     });
 
     stateMachineRouter.emit('goToWork', { activity: 'kayaking' });
@@ -246,9 +246,9 @@ describe('custom getters/setters - boolean', () => {
           },
           setter(value) {
             return value.toString();
-          }
-        }
-      }
+          },
+        },
+      },
     });
     stateMachineRouter = MobxStateMachineRouter({
       states,
@@ -256,10 +256,10 @@ describe('custom getters/setters - boolean', () => {
         name: 'HOME',
         params: {
           activity: null,
-          bored: null
-        }
+          bored: null,
+        },
       },
-      persistence
+      persistence,
     });
   });
 
@@ -292,19 +292,19 @@ describe('custom getters/setters - array', () => {
           },
           setter(value: []) {
             return encodeURI(JSON.stringify(value));
-          }
-        }
-      }
+          },
+        },
+      },
     });
     stateMachineRouter = MobxStateMachineRouter({
       states,
       currentState: {
         name: 'HOME',
         params: {
-          activity: null
-        }
+          activity: null,
+        },
       },
-      persistence
+      persistence,
     });
   });
 
@@ -326,7 +326,7 @@ describe('custom getters/setters - array', () => {
     await ms(10);
     expect(stateMachineRouter.currentState.params.activity).toEqual([
       'bus',
-      'walking'
+      'walking',
     ]);
   });
 });

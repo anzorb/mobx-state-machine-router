@@ -3,29 +3,29 @@ import interceptAsync from 'mobx-async-intercept';
 import MobxStateMachineRouter from '../src';
 import { observeParam } from './index';
 
-const ms = ms => new Promise(resolve => setTimeout(resolve, ms));
+const ms = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const states = {
   HOME: {
     actions: {
       goToWork: 'WORK',
-      clean: 'HOME'
-    }
+      clean: 'HOME',
+    },
   },
   WORK: {
     actions: {
       goHome: 'HOME',
       slack: 'WORK',
-      getFood: 'WORK/LUNCHROOM'
-    }
+      getFood: 'WORK/LUNCHROOM',
+    },
   },
   'WORK/LUNCHROOM': {
     actions: {
       eat: 'WORK/LUNCHROOM',
       backToWork: 'WORK',
-      tiredAfterLunchGoHome: 'HOME'
-    }
-  }
+      tiredAfterLunchGoHome: 'HOME',
+    },
+  },
 };
 
 describe('init', () => {
@@ -35,7 +35,7 @@ describe('init', () => {
 
   it('should allow to create instance with null startState or query', () => {
     const stateMachineRouter = MobxStateMachineRouter({
-      states
+      states,
     });
     expect(stateMachineRouter.currentState.name).toBe('HOME');
     expect(stateMachineRouter.currentState.params).toEqual({});
@@ -47,9 +47,9 @@ describe('init', () => {
       currentState: {
         name: 'AAAH',
         params: {
-          activity: null
-        }
-      }
+          activity: null,
+        },
+      },
     });
     expect(stateMachineRouter.currentState.name).not.toBe('AAAH');
     expect(stateMachineRouter.currentState.name).toBe('HOME');
@@ -60,8 +60,8 @@ describe('init', () => {
       states,
       currentState: {
         name: 'HOME',
-        params: {}
-      }
+        params: {},
+      },
     });
     expect(Object.keys(stateMachineRouter.currentState.params).length).toBe(0);
   });
@@ -72,9 +72,9 @@ describe('init', () => {
       currentState: {
         name: 'HOME',
         params: {
-          activity: 'biking'
-        }
-      }
+          activity: 'biking',
+        },
+      },
     });
     const spy = jest.fn();
     observe(stateMachineRouter, 'currentState', spy);
@@ -92,9 +92,9 @@ describe('MobX state machine router', () => {
       currentState: {
         name: 'HOME',
         params: {
-          activity: ''
-        }
-      }
+          activity: '',
+        },
+      },
     });
   });
 
@@ -124,12 +124,12 @@ describe('MobX state machine router', () => {
       );
       stateMachineRouter.emit('goHome', {
         ...stateMachineRouter.currentState.params,
-        method: 'car'
+        method: 'car',
       });
       expect(stateMachineRouter.currentState.name).toBe('HOME');
       expect(stateMachineRouter.currentState.params).toEqual({
         activity: 'daydreaming',
-        method: 'car'
+        method: 'car',
       });
     });
 
@@ -206,9 +206,9 @@ describe('intercepting state changes', () => {
       currentState: {
         name: 'HOME',
         params: {
-          activity: null
-        }
-      }
+          activity: null,
+        },
+      },
     });
   });
 
@@ -220,7 +220,7 @@ describe('intercepting state changes', () => {
   });
 
   it('should allow to intercept state change and override result state', () => {
-    intercept(stateMachineRouter, 'currentState', object => {
+    intercept(stateMachineRouter, 'currentState', (object) => {
       return { ...object, newValue: { ...object.newValue, name: 'HOME' } };
     });
     stateMachineRouter.emit('goToWork');
@@ -228,20 +228,20 @@ describe('intercepting state changes', () => {
   });
 
   it('should allow to intercept state change and stop state change', () => {
-    intercept(stateMachineRouter, 'currentState', object => {
+    intercept(stateMachineRouter, 'currentState', (object) => {
       return null;
     });
     stateMachineRouter.emit('goToWork');
     expect(stateMachineRouter.currentState.name).toBe('HOME');
   });
 
-  it('should allow to async intercept', done => {
-    interceptAsync(stateMachineRouter, 'currentState', object => {
-      return new Promise(resolve => {
+  it('should allow to async intercept', (done) => {
+    interceptAsync(stateMachineRouter, 'currentState', (object) => {
+      return new Promise((resolve) => {
         setTimeout(() => {
           resolve({
             ...object,
-            newValue: { ...object.newValue, name: 'ERROR' }
+            newValue: { ...object.newValue, name: 'ERROR' },
           });
         }, 3);
       });
@@ -258,15 +258,15 @@ describe('intercepting state changes', () => {
   });
 
   it('should allow to async intercept to update param', async () => {
-    interceptAsync(stateMachineRouter, 'currentState', object => {
-      return new Promise(resolve => {
+    interceptAsync(stateMachineRouter, 'currentState', (object) => {
+      return new Promise((resolve) => {
         setTimeout(() => {
           resolve({
             ...object,
             newValue: {
               ...object.newValue,
-              params: { ...object.newValue.params, activity: 'working-hard' }
-            }
+              params: { ...object.newValue.params, activity: 'working-hard' },
+            },
           });
         }, 10);
       });
