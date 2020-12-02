@@ -90,8 +90,6 @@ function URLPersistence<S extends string, P, A extends string>(
         const params = { ...toJS(currentState.params) };
         const paramsString: string = serialize(params, options?.serializers);
 
-        console.log(paramsString);
-
         const toURL = `${name}${paramsString !== '' ? `?${paramsString}` : ''}`;
         if (window.location.hash.split('#')[1] !== toURL) {
           history.push(toURL);
