@@ -165,6 +165,15 @@ describe('with URL persistence', () => {
     );
   });
 
+    it('should read state from query params with special chars', async () => {
+      window.location.hash =
+        '/work?activity=%25%2B-%2F!%40%23%24%5E%26*()%20text';
+      await ms(10);
+      expect(stateMachineRouter.currentState.params.activity).toBe(
+        '%+-/!@#$^&*() text'
+      );
+    });
+
   it('should nullify query params', () => {
     stateMachineRouter.emit(ACTION.goToWork);
     stateMachineRouter.emit(ACTION.slack, { activity: null });

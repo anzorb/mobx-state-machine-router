@@ -29,12 +29,7 @@ const deserialize = (params, serializers: ISerializers | undefined): object => {
         throw new Error(err);
       }
     } else {
-      try {
-        paramsObject[key] = decodeURIComponent(params[key]);
-      } catch(err) {
         paramsObject[key] = params[key]
-      }
-      
     }
   });
   return paramsObject;
