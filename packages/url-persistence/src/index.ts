@@ -68,10 +68,7 @@ function URLPersistence<S extends string, P, A extends string>(
     const params = parse(location.search);
     const name = decodeURIComponent(location.pathname);
     const paramsObject = deserialize(params, options?.serializers);
-    API.currentState = {
-      name: name as S,
-      params: (<unknown>paramsObject) as P,
-    };
+    API.currentState = { name: name as S, params: <unknown>paramsObject as P };
   });
 
   const API = observable(
