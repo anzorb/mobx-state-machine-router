@@ -137,8 +137,8 @@ describe('with URL persistence', () => {
   });
 
   it('should update query params with special chars', () => {
-    stateMachineRouter.emit(ACTION.goToWork);
-    stateMachineRouter.emit(ACTION.slack, { activity: '%+-/!@#$^&*() text' });
+    stateMachineRouter.emit('goToWork');
+    stateMachineRouter.emit('slack', { activity: '%+-/!@#$^&*() text' });
     expect(window.location.hash).toBe(
       '#/work?activity=%25%2B-%2F!%40%23%24%5E%26*()%20text'
     );
