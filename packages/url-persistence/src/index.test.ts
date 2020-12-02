@@ -157,6 +157,14 @@ describe('with URL persistence', () => {
     expect(window.location.hash).toBe('#/work?activity=daydreaming');
   });
 
+  it('should update query params with special chars', () => {
+    stateMachineRouter.emit(ACTION.goToWork);
+    stateMachineRouter.emit(ACTION.slack, { activity: '%+-/!@#$^&*() text' });
+    expect(window.location.hash).toBe(
+      '#/work?activity=%25%2B-%2F!%40%23%24%5E%26*()%20text'
+    );
+  });
+
   it('should nullify query params', () => {
     stateMachineRouter.emit(ACTION.goToWork);
     stateMachineRouter.emit(ACTION.slack, { activity: null });

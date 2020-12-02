@@ -29,7 +29,12 @@ const deserialize = (params, serializers: ISerializers | undefined): object => {
         throw new Error(err);
       }
     } else {
-      paramsObject[key] = decodeURIComponent(params[key]);
+      try {
+        paramsObject[key] = decodeURIComponent(params[key]);
+      } catch(err) {
+        paramsObject[key] = params[key]
+      }
+      
     }
   });
   return paramsObject;
@@ -84,6 +89,8 @@ function URLPersistence<S extends string, P, A extends string>(
         const name = states[currentState.name].url;
         const params = { ...toJS(currentState.params) };
         const paramsString: string = serialize(params, options?.serializers);
+
+        console.log(paramsString);
 
         const toURL = `${name}${paramsString !== '' ? `?${paramsString}` : ''}`;
         if (window.location.hash.split('#')[1] !== toURL) {
