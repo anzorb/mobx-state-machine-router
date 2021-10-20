@@ -204,7 +204,7 @@ describe('with URL persistence', () => {
     stateMachineRouter.emit('slack', { activity: 'napping' });
     expect(window.location.hash).toBe('#/work?activity=napping');
     stateMachineRouter.emit('slack', {});
-    expect(stateMachineRouter.currentState.params.activity).toBe(undefined);    
+    expect(stateMachineRouter.currentState.params.activity).toBe(undefined);
   });
 
   it('should allow intecepting of state, which in turn doesn not set the URL', () => {

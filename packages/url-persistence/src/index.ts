@@ -61,10 +61,7 @@ const serialize = (params, serializers: ISerializers | undefined): string => {
 };
 
 export type LikeHistoryInterface = {
-  push(options: {
-    pathname: string,
-    search?: string
-  }): void
+  push(options: { pathname: string; search?: string }): void;
   listen(fn: (update: { location: Location }) => void): void;
   location: Location;
 };
@@ -97,7 +94,7 @@ const URLPersistence = (options?: {
         if (window.location.href.split('#')[1] !== toURL) {
           historyObject.push({
             pathname: name!,
-            search: paramsString !== '' ? `?${paramsString}` : ''
+            search: paramsString !== '' ? `?${paramsString}` : '',
           });
         }
       },
