@@ -203,7 +203,6 @@ describe('with URL persistence', () => {
     expect(stateMachineRouter.currentState.params).toEqual({});
   });
 
-  // after updating to history@5, the URL is not being correctly written to when running in JSDOM
   it('should allow resetting query params', () => {
     const persistence = URLPersistence<STATE, TParams, ACTION>();
     window.location.hash = '#/invalid?what=world&where=bla';
