@@ -182,7 +182,8 @@ describe('with URL persistence', () => {
     expect(stateMachineRouter.currentState.params).toEqual({});
   });
 
-  it.skip('should allow resetting query params', () => {
+  // after updating to history@5, the URL is not being correctly written to when running in JSDOM
+  it('should allow resetting query params', () => {
     const persistence = URLPersistence();
     window.location.hash = '#/invalid?what=world&where=bla';
     const stateMachineRouter: IMobxStateMachineRouter = MobxStateMachineRouter({
@@ -200,9 +201,9 @@ describe('with URL persistence', () => {
     stateMachineRouter.emit('slack', { activity: 'daydreaming' });
     expect(stateMachineRouter.currentState.params.activity).toBe('daydreaming');
     expect(window.location.hash).toBe('#/work?activity=daydreaming');
+    stateMachineRouter.emit('slack', { activity: 'napping' });
+    expect(window.location.hash).toBe('#/work?activity=napping');
     stateMachineRouter.emit('slack', {});
-    // workaround since history@5 cannot 
-    window.location.href = 'http://localhost/#/work';
     expect(stateMachineRouter.currentState.params.activity).toBe(undefined);    
   });
 
