@@ -1,4 +1,4 @@
-import { createHashHistory, History, Location as ILocation } from 'history';
+import { createHashHistory, Location } from 'history';
 import { parse, ParsedQuery } from 'query-string';
 import { action, observable, toJS } from 'mobx';
 import { IPersistence, IStates } from '../../core/src';
@@ -25,7 +25,7 @@ const deserialize = (params, serializers: ISerializers | undefined): object => {
     ) {
       try {
         paramsObject[key] = serializers[key].getter!(params[key]);
-      } catch (err) {
+      } catch (err: any) {
         throw new Error(err);
       }
     } else {
@@ -48,7 +48,7 @@ const serialize = (params, serializers: ISerializers | undefined): string => {
     ) {
       try {
         paramsString += `${key}=${serializers[key].setter!(params[key])}&`;
-      } catch (err) {
+      } catch (err: any) {
         throw new Error(err);
       }
     } else {
@@ -60,11 +60,19 @@ const serialize = (params, serializers: ISerializers | undefined): string => {
   return paramsString;
 };
 
-const URLPersistence = (
-  history: History = createHashHistory() as History,
-  options?: { serializers?: ISerializers }
-) => {
-  const setStateFromLocation = action((location: ILocation) => {
+export type LikeHistoryInterface = {
+  push(url: string): void;
+  listen(fn: (update: { location: Location }) => void): void;
+  location: Location;
+};
+
+const URLPersistence = (options?: {
+  serializers?: ISerializers;
+  history?: LikeHistoryInterface;
+}) => {
+  const historyObject = options?.history || createHashHistory();
+
+  const setStateFromLocation = action((location: Location) => {
     const params = parse(location.search);
     const name = decodeURIComponent(location.pathname);
     const paramsObject = deserialize(params, options?.serializers);
@@ -84,7 +92,7 @@ const URLPersistence = (
 
         const toURL = `${name}${paramsString !== '' ? `?${paramsString}` : ''}`;
         if (window.location.hash.split('#')[1] !== toURL) {
-          history.push(toURL);
+          historyObject.push(toURL);
         }
       },
     },
@@ -92,9 +100,11 @@ const URLPersistence = (
     { deep: false }
   );
 
-  history.listen(setStateFromLocation);
+  historyObject.listen((update) => {
+    setStateFromLocation(update.location);
+  });
 
-  setStateFromLocation(history.location);
+  setStateFromLocation(historyObject.location);
 
   return API;
 };

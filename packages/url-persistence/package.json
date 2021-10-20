@@ -23,14 +23,15 @@
   },
   "dependencies": {
     "@types/history": "^4.7.3",
-    "history": "^4.9.0",
-    "query-string": "5.1.1"
+    "history": "^5.0.1",
+    "query-string": "^7.0.1"
   },
   "devDependenices": {
     "@mobx-state-machine-router/core": "^1.2.3",
-    "typescript": "^3.6.3",
-    "rimraf": "3.0.0",
-    "mobx": "^4.12.0"
+    "mobx": "^4.15.7"
+  },
+  "peerDependencies": {
+    "history": "^5.0.1"
   },
   "gitHead": "7a1b78930ff6c0b806ee494caca3090078147dc2"
 }

@@ -27,12 +27,11 @@
   },
   "devDependencies": {
     "@types/node": "12.12.17",
-    "mobx": "^4.12.0",
-    "mobx-async-intercept": "^1.1.10",
-    "rimraf": "3.0.0"
+    "mobx": "^4.15.7",
+    "mobx-async-intercept": "^1.1.10"
   },
   "peerDependencies": {
-    "mobx": "^4.12.0"
+    "mobx": "^4.15.7"
   },
   "gitHead": "c632d6126ea56d1fdee8294411215b487e880d10"
 }
