@@ -1,4 +1,4 @@
-import { createHashHistory, History, Location as ILocation } from 'history';
+import { createHashHistory, Location } from 'history';
 import { parse, ParsedQuery } from 'query-string';
 import { action, observable, toJS } from 'mobx';
 import { IPersistence } from '../../core/src';
@@ -25,11 +25,11 @@ const deserialize = (params, serializers: ISerializers | undefined): object => {
     ) {
       try {
         paramsObject[key] = serializers[key].getter!(params[key]);
-      } catch (err) {
+      } catch (err: any) {
         throw new Error(err);
       }
     } else {
-        paramsObject[key] = params[key]
+      paramsObject[key] = params[key]
     }
   });
   return paramsObject;
@@ -48,7 +48,7 @@ const serialize = (params, serializers: ISerializers | undefined): string => {
     ) {
       try {
         paramsString += `${key}=${serializers[key].setter!(params[key])}&`;
-      } catch (err) {
+      } catch (err: any) {
         throw new Error(err);
       }
     } else {
@@ -60,11 +60,19 @@ const serialize = (params, serializers: ISerializers | undefined): string => {
   return paramsString;
 };
 
-function URLPersistence<S extends string, P, A extends string>(
-  history: History = createHashHistory() as History,
-  options?: { serializers?: ISerializers }
-): IPersistence<S, P, A> {
-  const setStateFromLocation = action((location: ILocation) => {
+export type LikeHistoryInterface = {
+  push(options: { pathname: string; search?: string }): void;
+  listen(fn: (update: { location: Location }) => void): void;
+  location: Location;
+};
+
+const URLPersistence = <S extends string, P, A extends string>(options?: {
+  serializers?: ISerializers;
+  history?: LikeHistoryInterface;
+}):  IPersistence<S, P, A> => {
+  const historyObject = options?.history || createHashHistory();
+
+  const setStateFromLocation = action((location: Location) => {
     const params = parse(location.search);
     const name = decodeURIComponent(location.pathname);
     const paramsObject = deserialize(params, options?.serializers);
@@ -83,8 +91,11 @@ function URLPersistence<S extends string, P, A extends string>(
         const paramsString: string = serialize(params, options?.serializers);
 
         const toURL = `${name}${paramsString !== '' ? `?${paramsString}` : ''}`;
-        if (window.location.hash.split('#')[1] !== toURL) {
-          history.push(toURL);
+        if (window.location.href.split('#')[1] !== toURL) {
+          historyObject.push({
+            pathname: name!,
+            search: paramsString !== '' ? `?${paramsString}` : '',
+          });
         }
       },
     } as IPersistence<S, P, A>,
@@ -92,9 +103,11 @@ function URLPersistence<S extends string, P, A extends string>(
     { deep: false }
   );
 
-  history.listen(setStateFromLocation);
+  historyObject.listen((update) => {
+    setStateFromLocation(update.location);
+  });
 
-  setStateFromLocation(history.location);
+  setStateFromLocation(historyObject.location);
 
   return API;
 }

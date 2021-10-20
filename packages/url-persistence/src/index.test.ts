@@ -1,5 +1,4 @@
-import { observe, intercept, toJS } from 'mobx';
-import { createHashHistory, Location } from 'history';
+import { observe, intercept } from 'mobx';
 import URLPersistence from '.';
 import { IMobxStateMachineRouter, TStates } from '../../core/src';
 import MobxStateMachineRouter from '../../core/src';
@@ -107,7 +106,7 @@ describe('with URL persistence', () => {
 
   let persistence;
   beforeEach(() => {
-    persistence = URLPersistence(createHashHistory());
+    persistence = URLPersistence();
     stateMachineRouter = MobxStateMachineRouter<STATE, TParams, ACTION>({
       states,
       currentState: {
@@ -128,8 +127,8 @@ describe('with URL persistence', () => {
   });
 
   it('should do basic routing', () => {
-    persistence = URLPersistence(createHashHistory());
-    stateMachineRouter = MobxStateMachineRouter<STATE, TParams, ACTION>({
+    persistence = URLPersistence();
+    stateMachineRouter = MobxStateMachineRouter({
       states,
       currentState: {
         name: STATE.HOME,
@@ -187,7 +186,7 @@ describe('with URL persistence', () => {
   });
 
   it('should invalid starting urls', () => {
-    const persistence = URLPersistence<STATE, TParams, ACTION>(createHashHistory());
+    const persistence = URLPersistence<STATE, TParams, ACTION>();
     window.location.hash = '#/invalid?what=world&where=bla';
     const stateMachineRouter = MobxStateMachineRouter<STATE, TParams, ACTION>({
       states,
@@ -204,8 +203,9 @@ describe('with URL persistence', () => {
     expect(stateMachineRouter.currentState.params).toEqual({});
   });
 
+  // after updating to history@5, the URL is not being correctly written to when running in JSDOM
   it('should allow resetting query params', () => {
-    const persistence = URLPersistence<STATE, TParams, ACTION>(createHashHistory());
+    const persistence = URLPersistence<STATE, TParams, ACTION>();
     window.location.hash = '#/invalid?what=world&where=bla';
     const stateMachineRouter = MobxStateMachineRouter<STATE, TParams, ACTION>({
       states,
@@ -228,7 +228,7 @@ describe('with URL persistence', () => {
   });
 
   it('should allow intecepting of state, which in turn doesn not set the URL', () => {
-    const persistence = URLPersistence<STATE, TParams, ACTION>(createHashHistory());
+    const persistence = URLPersistence<STATE, TParams, ACTION>();
     window.location.hash = '#/';
     const stateMachineRouter = MobxStateMachineRouter<STATE, TParams, ACTION>({
       states,
@@ -263,7 +263,7 @@ type TParams2 = TParams & {
 describe('custom getters/setters - boolean', () => {
   let persistence, stateMachineRouter;
   beforeEach(() => {
-    persistence = URLPersistence<STATE, TParams2, ACTION>(createHashHistory(), {
+    persistence = URLPersistence<STATE, TParams2, ACTION>({
       serializers: {
         bored: {
           getter(value) {
@@ -309,7 +309,7 @@ describe('custom getters/setters - boolean', () => {
 describe('custom getters/setters - array', () => {
   let persistence, stateMachineRouter;
   beforeEach(() => {
-    persistence = URLPersistence(createHashHistory(), {
+    persistence = URLPersistence({
       serializers: {
         activity: {
           getter(value: string) {
