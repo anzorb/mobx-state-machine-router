@@ -29,49 +29,44 @@ npm install @mobx-state-machine-router/core mobx
 ```typescript
 import MobxStateMachineRouter, { TStates } from '@mobx-state-machine-router/core';
 
-// 1. Define states and actions
-enum STATE {
-  HOME = 'HOME',
-  PRODUCTS = 'PRODUCTS',
-  PRODUCT_DETAIL = 'PRODUCT_DETAIL',
-}
+// 1. Define states and actions as string literal types
+type State = 'HOME' | 'PRODUCTS' | 'PRODUCT_DETAIL';
+type Action = 'viewProducts' | 'viewProduct' | 'goHome';
 
-enum ACTION {
-  viewProducts = 'viewProducts',
-  viewProduct = 'viewProduct',
-  goHome = 'goHome',
-}
+type Params = {
+  productId?: string;
+};
 
 // 2. Define the state machine
-const states: TStates<STATE, ACTION> = {
-  [STATE.HOME]: {
-    actions: { [ACTION.viewProducts]: STATE.PRODUCTS },
+const states: TStates<State, Action> = {
+  HOME: {
+    actions: { viewProducts: 'PRODUCTS' },
   },
-  [STATE.PRODUCTS]: {
+  PRODUCTS: {
     actions: {
-      [ACTION.goHome]: STATE.HOME,
-      [ACTION.viewProduct]: STATE.PRODUCT_DETAIL,
+      goHome: 'HOME',
+      viewProduct: 'PRODUCT_DETAIL',
     },
   },
-  [STATE.PRODUCT_DETAIL]: {
+  PRODUCT_DETAIL: {
     actions: {
-      [ACTION.goHome]: STATE.HOME,
-      [ACTION.viewProducts]: STATE.PRODUCTS,
+      goHome: 'HOME',
+      viewProducts: 'PRODUCTS',
     },
   },
 };
 
 // 3. Create the router
-const router = MobxStateMachineRouter({
+const router = MobxStateMachineRouter<State, Params, Action>({
   states,
-  currentState: { name: STATE.HOME, params: {} },
+  currentState: { name: 'HOME', params: {} },
 });
 
 // 4. Navigate
-router.emit(ACTION.viewProducts);
+router.emit('viewProducts');
 console.log(router.currentState.name); // 'PRODUCTS'
 
-router.emit(ACTION.viewProduct, { productId: '123' });
+router.emit('viewProduct', { productId: '123' });
 console.log(router.currentState.params); // { productId: '123' }
 ```
 
@@ -79,7 +74,7 @@ console.log(router.currentState.params); // { productId: '123' }
 
 ```tsx
 import { observer } from 'mobx-react-lite';
-import { router, STATE, ACTION } from './router';
+import { router } from './router';
 
 const App = observer(() => {
   const { name, params } = router.currentState;
@@ -87,13 +82,13 @@ const App = observer(() => {
   return (
     <div>
       <nav>
-        <button onClick={() => router.emit(ACTION.goHome)}>Home</button>
-        <button onClick={() => router.emit(ACTION.viewProducts)}>Products</button>
+        <button onClick={() => router.emit('goHome')}>Home</button>
+        <button onClick={() => router.emit('viewProducts')}>Products</button>
       </nav>
 
-      {name === STATE.HOME && <HomePage />}
-      {name === STATE.PRODUCTS && <ProductsPage />}
-      {name === STATE.PRODUCT_DETAIL && <ProductDetail id={params.productId} />}
+      {name === 'HOME' && <HomePage />}
+      {name === 'PRODUCTS' && <ProductsPage />}
+      {name === 'PRODUCT_DETAIL' && <ProductDetail id={params.productId} />}
     </div>
   );
 });
@@ -125,8 +120,8 @@ router.currentState.params // Current params object
 Emit an action to transition states:
 
 ```typescript
-router.emit(ACTION.goHome);
-router.emit(ACTION.viewProduct, { productId: '123' });
+router.emit('goHome');
+router.emit('viewProduct', { productId: '123' });
 ```
 
 ### `router.destroy()`
@@ -157,8 +152,8 @@ observe(router, 'currentState', ({ newValue }) => {
 
 // Intercept and guard navigation
 intercept(router, 'currentState', (change) => {
-  if (change.newValue.name === STATE.ADMIN && !isLoggedIn) {
-    return { ...change, newValue: { name: STATE.LOGIN, params: {} } };
+  if (change.newValue.name === 'ADMIN' && !isLoggedIn) {
+    return { ...change, newValue: { name: 'LOGIN', params: {} } };
   }
   return change;
 });

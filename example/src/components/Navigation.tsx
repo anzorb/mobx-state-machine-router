@@ -1,10 +1,10 @@
 import { observer } from "mobx-react-lite";
-import { router, STATE, ACTION } from "../router";
+import { router, State } from "../router";
 
 export const Navigation = observer(() => {
   const currentState = router.currentState.name;
 
-  const navButtonClass = (state: STATE) =>
+  const navButtonClass = (state: State) =>
     `px-4 py-2 rounded-lg font-medium transition-colors ${
       currentState === state
         ? "bg-indigo-600 text-white"
@@ -22,40 +22,40 @@ export const Navigation = observer(() => {
         <ul className="flex items-center gap-2">
           <li>
             <button
-              className={navButtonClass(STATE.HOME)}
-              onClick={() => router.emit(ACTION.goHome)}
+              className={navButtonClass("home")}
+              onClick={() => router.emit("go-home")}
             >
               Home
             </button>
           </li>
           <li>
             <button
-              className={navButtonClass(STATE.ABOUT)}
-              onClick={() => router.emit(ACTION.goAbout)}
+              className={navButtonClass("about")}
+              onClick={() => router.emit("go-about")}
             >
               About
             </button>
           </li>
           <li>
             <button
-              className={navButtonClass(STATE.PRODUCTS)}
-              onClick={() => router.emit(ACTION.goProducts)}
+              className={navButtonClass("products")}
+              onClick={() => router.emit("go-products")}
             >
               Products
             </button>
           </li>
           <li>
             <button
-              className={navButtonClass(STATE.REACT_INTEGRATION)}
-              onClick={() => router.emit(ACTION.goReactIntegration)}
+              className={navButtonClass("react-integration")}
+              onClick={() => router.emit("go-react-integration")}
             >
               React Integration
             </button>
           </li>
           <li>
             <button
-              className={navButtonClass(STATE.CONTACT)}
-              onClick={() => router.emit(ACTION.goContact)}
+              className={navButtonClass("contact")}
+              onClick={() => router.emit("go-contact")}
             >
               Contact
             </button>

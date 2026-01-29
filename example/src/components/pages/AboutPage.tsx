@@ -56,26 +56,30 @@ export const AboutPage = () => {
           State Machine Definition
         </h2>
         <CodeBlock>
-          {`const states: TStates<STATE, ACTION> = {
-  [STATE.HOME]: {
+          {`// Define states and actions as string literal types
+type State = "home" | "about" | "products" | "product-detail";
+type Action = "go-home" | "go-about" | "go-products" | "view-product";
+
+const states: TStates<State, Action> = {
+  home: {
     actions: {
-      [ACTION.goAbout]: STATE.ABOUT,
-      [ACTION.goProducts]: STATE.PRODUCTS,
+      "go-about": "about",
+      "go-products": "products",
     },
     url: "/",
   },
-  [STATE.ABOUT]: {
+  about: {
     actions: {
-      [ACTION.goHome]: STATE.HOME,
-      [ACTION.goProducts]: STATE.PRODUCTS,
+      "go-home": "home",
+      "go-products": "products",
     },
     url: "/about",
   },
-  [STATE.PRODUCTS]: {
+  products: {
     actions: {
-      [ACTION.goHome]: STATE.HOME,
-      [ACTION.goProducts]: STATE.PRODUCTS, // Self-transition for params
-      [ACTION.viewProduct]: STATE.PRODUCT_DETAIL,
+      "go-home": "home",
+      "go-products": "products", // Self-transition for params
+      "view-product": "product-detail",
     },
     url: "/products",
   },

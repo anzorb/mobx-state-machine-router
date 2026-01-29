@@ -1,4 +1,4 @@
-import { router, ACTION } from "../../router";
+import { router } from "../../router";
 
 export const HomePage = () => {
   return (
@@ -68,13 +68,13 @@ export const HomePage = () => {
         <div className="flex justify-center gap-4">
           <button
             className="bg-white text-indigo-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
-            onClick={() => router.emit(ACTION.goProducts)}
+            onClick={() => router.emit("go-products")}
           >
             Browse Products
           </button>
           <button
             className="bg-white/20 text-white px-6 py-3 rounded-lg font-semibold hover:bg-white/30 transition-colors"
-            onClick={() => router.emit(ACTION.goAbout)}
+            onClick={() => router.emit("go-about")}
           >
             Learn More
           </button>

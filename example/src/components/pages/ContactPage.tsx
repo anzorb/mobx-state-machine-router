@@ -45,33 +45,6 @@ export const ContactPage = () => {
           </a>
         </div>
       </div>
-
-      <div className="bg-gray-900 rounded-xl p-8 text-gray-100">
-        <h2 className="text-2xl font-semibold mb-4">Navigation State Diagram</h2>
-        <pre className="text-sm overflow-x-auto font-mono leading-relaxed">
-          {`
-    ┌──────────────────────────────────────────────────┐
-    │                                                  │
-    │    ┌────────┐         ┌─────────┐               │
-    │    │  HOME  │ ◄─────► │  ABOUT  │               │
-    │    └────────┘         └─────────┘               │
-    │        │ ▲                 │ ▲                   │
-    │        │ │                 │ │                   │
-    │        ▼ │                 │ │                   │
-    │    ┌──────────┐           │ │    ┌─────────┐   │
-    │    │ PRODUCTS │ ◄─────────┘ └───►│ CONTACT │   │
-    │    └──────────┘                   └─────────┘   │
-    │        │ ▲                             ▲        │
-    │        │ │                             │        │
-    │        ▼ │                             │        │
-    │    ┌──────────────┐                    │        │
-    │    │PRODUCT_DETAIL│────────────────────┘        │
-    │    └──────────────┘                             │
-    │                                                  │
-    └──────────────────────────────────────────────────┘
-          `}
-        </pre>
-      </div>
     </div>
   );
 };

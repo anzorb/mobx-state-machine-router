@@ -1,5 +1,5 @@
 import { observer } from "mobx-react-lite";
-import { router, ACTION } from "../../router";
+import { router } from "../../router";
 
 const products = [
   { id: "1", name: "State Machine Router", price: "Free", category: "routing" },
@@ -26,14 +26,14 @@ export const ProductsPage = observer(() => {
   });
 
   const handleCategoryChange = (category: string) => {
-    router.emit(ACTION.goProducts, {
+    router.emit("go-products", {
       ...router.currentState.params,
       category: category === "all" ? undefined : category,
     });
   };
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    router.emit(ACTION.goProducts, {
+    router.emit("go-products", {
       ...router.currentState.params,
       search: e.target.value || undefined,
     });
@@ -112,7 +112,7 @@ export const ProductsPage = observer(() => {
             <button
               className="w-full bg-indigo-600 text-white py-2 rounded-lg font-medium hover:bg-indigo-700 transition-colors"
               onClick={() =>
-                router.emit(ACTION.viewProduct, { productId: product.id })
+                router.emit("view-product", { productId: product.id })
               }
             >
               View Details
@@ -128,7 +128,7 @@ export const ProductsPage = observer(() => {
           </p>
           <button
             className="bg-indigo-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-indigo-700 transition-colors"
-            onClick={() => router.emit(ACTION.goProducts, {})}
+            onClick={() => router.emit("go-products", {})}
           >
             Clear Filters
           </button>
