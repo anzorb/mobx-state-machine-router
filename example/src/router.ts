@@ -2,6 +2,8 @@ import MobxStateMachineRouter, {
   TStates,
 } from "@mobx-state-machine-router/core";
 import URLPersistence from "@mobx-state-machine-router/url-persistence";
+import { observable, action } from "mobx";
+import interceptAsync from "mobx-async-intercept";
 
 // Define the possible states (pages) in our app
 export enum STATE {
@@ -88,6 +90,7 @@ export const states: TStates<STATE, ACTION> = {
       [ACTION.goAbout]: STATE.ABOUT,
       [ACTION.goProducts]: STATE.PRODUCTS,
       [ACTION.goContact]: STATE.CONTACT,
+      [ACTION.goReactIntegration]: STATE.REACT_INTEGRATION, // Self-transition for params
     },
     url: "/react-integration",
   },
@@ -108,3 +111,43 @@ export const router = MobxStateMachineRouter<STATE, RouterParams, ACTION>({
 
 // Helper type for the router
 export type Router = typeof router;
+
+// Loading state for async transitions
+export const loadingState = observable({
+  isLoading: false,
+  message: "",
+  setLoading: action((loading: boolean, message = "") => {
+    loadingState.isLoading = loading;
+    loadingState.message = message;
+  }),
+});
+
+// Simulate fetching product data with a delay
+const fetchProductData = (productId: string): Promise<void> => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      console.log(`Fetched product ${productId}`);
+      resolve();
+    }, 1500); // 1.5 second delay to simulate API call
+  });
+};
+
+// Async intercept for product detail page - shows loading spinner
+interceptAsync(router, "currentState", async (change) => {
+  if (change.newValue.name === STATE.PRODUCT_DETAIL) {
+    const productId = change.newValue.params?.productId;
+
+    // Show loading spinner
+    loadingState.setLoading(true, `Loading product ${productId}...`);
+
+    try {
+      // Simulate async data fetch
+      await fetchProductData(productId || "unknown");
+    } finally {
+      // Hide loading spinner
+      loadingState.setLoading(false);
+    }
+  }
+
+  return change;
+});

@@ -117,7 +117,12 @@ export const ProductDetailPage = observer(() => {
       </button>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">{product.name}</h1>
+        <div className="flex items-center gap-3 mb-4">
+          <h1 className="text-3xl font-bold text-gray-900">{product.name}</h1>
+          <span className="bg-green-100 text-green-700 text-xs font-medium px-2.5 py-1 rounded-full">
+            Loaded via interceptAsync
+          </span>
+        </div>
         <p className="text-lg text-gray-600 mb-6">{product.description}</p>
 
         <div className="mb-6">

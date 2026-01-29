@@ -1,6 +1,7 @@
 import { observer } from "mobx-react-lite";
 import { router, STATE } from "./router";
 import { Navigation } from "./components/Navigation";
+import { LoadingOverlay } from "./components/LoadingOverlay";
 import { HomePage } from "./components/pages/HomePage";
 import { AboutPage } from "./components/pages/AboutPage";
 import { ProductsPage } from "./components/pages/ProductsPage";
@@ -32,6 +33,7 @@ const App = observer(() => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <LoadingOverlay />
       <Navigation />
       <main>{renderPage()}</main>
       <footer className="bg-white border-t border-gray-200 mt-12">

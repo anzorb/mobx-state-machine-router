@@ -46,18 +46,18 @@ export const Navigation = observer(() => {
           </li>
           <li>
             <button
-              className={navButtonClass(STATE.CONTACT)}
-              onClick={() => router.emit(ACTION.goContact)}
-            >
-              Contact
-            </button>
-          </li>
-          <li>
-            <button
               className={navButtonClass(STATE.REACT_INTEGRATION)}
               onClick={() => router.emit(ACTION.goReactIntegration)}
             >
               React Integration
+            </button>
+          </li>
+          <li>
+            <button
+              className={navButtonClass(STATE.CONTACT)}
+              onClick={() => router.emit(ACTION.goContact)}
+            >
+              Contact
             </button>
           </li>
         </ul>

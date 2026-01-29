@@ -1,84 +1,36 @@
 import { observer } from "mobx-react-lite";
-import { router, ACTION } from "../../router";
-import { useEffect, useState } from "react";
-import { observe } from "mobx";
-
-// Example: A component that reacts to state changes
-const StateObserver = observer(() => {
-  const { name, params } = router.currentState;
-
-  return (
-    <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
-      <h4 className="font-semibold text-indigo-900 mb-2">Live State</h4>
-      <div className="font-mono text-sm">
-        <div>
-          <span className="text-gray-600">State:</span>{" "}
-          <span className="text-indigo-600">{name}</span>
-        </div>
-        <div>
-          <span className="text-gray-600">Params:</span>{" "}
-          <span className="text-indigo-600">{JSON.stringify(params)}</span>
-        </div>
-        <div>
-          <span className="text-gray-600">URL:</span>{" "}
-          <span className="text-indigo-600">{window.location.hash}</span>
-        </div>
-      </div>
-    </div>
-  );
-});
-
-// Example: Using useEffect with MobX observe
-const StateChangeLogger = () => {
-  const [log, setLog] = useState<string[]>([]);
-
-  useEffect(() => {
-    const disposer = observe(router, "currentState", (change) => {
-      const entry = `${new Date().toLocaleTimeString()}: ${change.oldValue?.name} → ${change.newValue.name}`;
-      setLog((prev) => [...prev.slice(-4), entry]);
-    });
-
-    return () => disposer();
-  }, []);
-
-  return (
-    <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-      <h4 className="font-semibold text-gray-900 mb-2">State Change Log</h4>
-      <div className="font-mono text-xs space-y-1">
-        {log.length === 0 ? (
-          <span className="text-gray-400">Navigate to see changes...</span>
-        ) : (
-          log.map((entry, i) => (
-            <div key={i} className="text-gray-600">
-              {entry}
-            </div>
-          ))
-        )}
-      </div>
-    </div>
-  );
-};
+import { Highlight, themes } from "prism-react-renderer";
 
 const CodeBlock = ({
   children,
   title,
+  language = "tsx",
 }: {
   children: string;
   title: string;
+  language?: string;
 }) => (
   <div className="bg-gray-900 rounded-lg overflow-hidden">
     <div className="bg-gray-800 px-4 py-2 text-gray-400 text-sm font-medium">
       {title}
     </div>
-    <pre className="p-4 overflow-x-auto text-sm">
-      <code className="text-gray-100">{children}</code>
-    </pre>
+    <Highlight theme={themes.nightOwl} code={children.trim()} language={language}>
+      {({ style, tokens, getLineProps, getTokenProps }) => (
+        <pre className="p-4 overflow-x-auto text-sm" style={style}>
+          {tokens.map((line, i) => (
+            <div key={i} {...getLineProps({ line })}>
+              {line.map((token, key) => (
+                <span key={key} {...getTokenProps({ token })} />
+              ))}
+            </div>
+          ))}
+        </pre>
+      )}
+    </Highlight>
   </div>
 );
 
 export const ReactIntegrationPage = observer(() => {
-  const [counter, setCounter] = useState(0);
-
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <h1 className="text-4xl font-bold text-gray-900 mb-4">
@@ -89,43 +41,6 @@ export const ReactIntegrationPage = observer(() => {
         observable, hash URL-based state machine routing.
       </p>
 
-      {/* Live Demo Section */}
-      <section className="mb-12">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">Live Demo</h2>
-        <div className="grid md:grid-cols-2 gap-4 mb-4">
-          <StateObserver />
-          <StateChangeLogger />
-        </div>
-        <div className="flex gap-2 flex-wrap">
-          <button
-            onClick={() => router.emit(ACTION.goHome)}
-            className="px-3 py-1.5 bg-indigo-600 text-white rounded text-sm hover:bg-indigo-700"
-          >
-            Go Home
-          </button>
-          <button
-            onClick={() => router.emit(ACTION.goProducts)}
-            className="px-3 py-1.5 bg-indigo-600 text-white rounded text-sm hover:bg-indigo-700"
-          >
-            Go Products
-          </button>
-          <button
-            onClick={() =>
-              router.emit(ACTION.goProducts, { category: "electronics" })
-            }
-            className="px-3 py-1.5 bg-indigo-600 text-white rounded text-sm hover:bg-indigo-700"
-          >
-            Products + Category
-          </button>
-          <button
-            onClick={() => router.emit(ACTION.viewProduct, { productId: "42" })}
-            className="px-3 py-1.5 bg-indigo-600 text-white rounded text-sm hover:bg-indigo-700"
-          >
-            View Product #42
-          </button>
-        </div>
-      </section>
-
       {/* Setup Section */}
       <section className="mb-12">
         <h2 className="text-2xl font-bold text-gray-900 mb-4">1. Setup</h2>
@@ -133,14 +48,14 @@ export const ReactIntegrationPage = observer(() => {
           Install the packages and create your router configuration:
         </p>
 
-        <CodeBlock title="terminal">
+        <CodeBlock title="Terminal" language="bash">
           {`npm install @mobx-state-machine-router/core \\
-           @mobx-state-machine-router/url-persistence \\
-           mobx mobx-react-lite history`}
+  @mobx-state-machine-router/url-persistence \\
+  mobx mobx-react-lite history`}
         </CodeBlock>
 
         <div className="mt-4">
-          <CodeBlock title="router.ts">
+          <CodeBlock title="router.ts" language="typescript">
             {`import MobxStateMachineRouter, { TStates } from "@mobx-state-machine-router/core";
 import URLPersistence from "@mobx-state-machine-router/url-persistence";
 
@@ -197,8 +112,8 @@ export const router = MobxStateMachineRouter({
           2. Observable Components
         </h2>
         <p className="text-gray-600 mb-4">
-          Wrap components with <code className="bg-gray-100 px-1 rounded">observer</code> from{" "}
-          <code className="bg-gray-100 px-1 rounded">mobx-react-lite</code> to
+          Wrap components with <code className="bg-gray-100 px-1.5 py-0.5 rounded text-sm font-mono">observer</code> from{" "}
+          <code className="bg-gray-100 px-1.5 py-0.5 rounded text-sm font-mono">mobx-react-lite</code> to
           automatically re-render when state changes:
         </p>
 
@@ -283,11 +198,11 @@ const App = observer(() => {
           4. Side Effects & Observation
         </h2>
         <p className="text-gray-600 mb-4">
-          Use MobX's <code className="bg-gray-100 px-1 rounded">observe</code> or{" "}
-          <code className="bg-gray-100 px-1 rounded">autorun</code> for side effects:
+          Use MobX's <code className="bg-gray-100 px-1.5 py-0.5 rounded text-sm font-mono">observe</code> or{" "}
+          <code className="bg-gray-100 px-1.5 py-0.5 rounded text-sm font-mono">autorun</code> for side effects:
         </p>
 
-        <CodeBlock title="Analytics Example">
+        <CodeBlock title="Analytics & Effects">
           {`import { observe, autorun } from "mobx";
 import { observeParam } from "@mobx-state-machine-router/core";
 
@@ -304,10 +219,15 @@ useEffect(() => {
 
 // React to specific param changes
 useEffect(() => {
-  const disposer = observeParam(router, "currentState", "productId", (change) => {
-    // Fetch product data when productId changes
-    fetchProduct(change.newValue.params.productId);
-  });
+  const disposer = observeParam(
+    router,
+    "currentState",
+    "productId",
+    (change) => {
+      // Fetch product data when productId changes
+      fetchProduct(change.newValue.params.productId);
+    }
+  );
   return () => disposer();
 }, []);
 
@@ -327,16 +247,16 @@ useEffect(() => {
           5. Route Guards
         </h2>
         <p className="text-gray-600 mb-4">
-          Use <code className="bg-gray-100 px-1 rounded">intercept</code> to guard routes or redirect:
+          Use <code className="bg-gray-100 px-1.5 py-0.5 rounded text-sm font-mono">intercept</code> to guard routes or redirect:
         </p>
 
-        <CodeBlock title="Auth Guard Example">
+        <CodeBlock title="Sync Auth Guard">
           {`import { intercept } from "mobx";
 
 // Protect routes that require authentication
 intercept(router, "currentState", (change) => {
   const protectedStates = [STATE.PROFILE, STATE.SETTINGS];
-  
+
   if (protectedStates.includes(change.newValue.name) && !isAuthenticated) {
     // Redirect to login instead
     return {
@@ -347,7 +267,7 @@ intercept(router, "currentState", (change) => {
       },
     };
   }
-  
+
   return change; // Allow navigation
 });
 
@@ -356,6 +276,74 @@ intercept(router, "currentState", (change) => {
   if (hasUnsavedChanges && !confirm("Discard changes?")) {
     return null; // Cancel navigation
   }
+  return change;
+});`}
+        </CodeBlock>
+
+        <p className="text-gray-600 my-4">
+          For async operations like API calls, use{" "}
+          <code className="bg-gray-100 px-1.5 py-0.5 rounded text-sm font-mono">interceptAsync</code> from{" "}
+          <code className="bg-gray-100 px-1.5 py-0.5 rounded text-sm font-mono">mobx-async-intercept</code>:
+        </p>
+
+        <CodeBlock title="Async Route Guard">
+          {`import interceptAsync from "mobx-async-intercept";
+
+// Async permission check before navigation
+interceptAsync(router, "currentState", async (change) => {
+  if (change.newValue.name === STATE.ADMIN) {
+    // Check permissions with API call
+    const hasPermission = await checkAdminPermission();
+    
+    if (!hasPermission) {
+      return {
+        ...change,
+        newValue: {
+          name: STATE.UNAUTHORIZED,
+          params: {},
+        },
+      };
+    }
+  }
+  
+  return change;
+});
+
+// Async data validation before leaving a page
+interceptAsync(router, "currentState", async (change) => {
+  if (router.currentState.name === STATE.CHECKOUT) {
+    // Validate cart before leaving checkout
+    const isValid = await validateCart();
+    
+    if (!isValid) {
+      showError("Please fix cart errors before leaving");
+      return null; // Cancel navigation
+    }
+  }
+  
+  return change;
+});
+
+// Load data before entering a page
+interceptAsync(router, "currentState", async (change) => {
+  if (change.newValue.name === STATE.PRODUCT_DETAIL) {
+    const productId = change.newValue.params.productId;
+    
+    try {
+      // Pre-fetch product data
+      await prefetchProduct(productId);
+    } catch (error) {
+      // Redirect to error page if fetch fails
+      return {
+        ...change,
+        newValue: {
+          name: STATE.NOT_FOUND,
+          params: { message: "Product not found" },
+        },
+      };
+    }
+  }
+  
   return change;
 });`}
         </CodeBlock>
@@ -401,28 +389,6 @@ intercept(router, "currentState", (change) => {
               re-render. No unnecessary renders.
             </p>
           </div>
-        </div>
-      </section>
-
-      {/* Counter to prove reactivity is isolated */}
-      <section className="mb-12">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">
-          Isolated Reactivity Demo
-        </h2>
-        <p className="text-gray-600 mb-4">
-          This counter is local React state. Clicking it doesn't affect the router,
-          and router changes don't reset it—proving MobX reactivity is properly isolated:
-        </p>
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => setCounter((c) => c + 1)}
-            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-          >
-            Counter: {counter}
-          </button>
-          <span className="text-gray-500 text-sm">
-            (Navigate around—this won't reset)
-          </span>
         </div>
       </section>
     </div>
