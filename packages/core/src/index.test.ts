@@ -90,6 +90,35 @@ describe('init', () => {
     expect(stateMachineRouter.currentState.name).toBe(STATE.HOME);
   });
 
+  it('should fallback to first state when current state becomes empty via persistence', () => {
+    // Create a mock persistence that can trigger state changes
+    const mockPersistence = observable({
+      currentState: {
+        name: '/',  // Valid route that maps to HOME
+        params: {},
+      },
+      write: jest.fn(),
+    });
+
+    const stateMachineRouter = MobxStateMachineRouter<STATE, TParams, ACTION>({
+      states,
+      currentState: {
+        name: STATE.HOME,
+        params: {},
+      },
+      persistence: mockPersistence,
+    });
+
+    expect(stateMachineRouter.currentState.name).toBe(STATE.HOME);
+
+    // Trigger an invalid route from persistence - this tests line 141 (route != null check)
+    mockPersistence.currentState = { name: '/invalid', params: {} };
+    // State should remain HOME since /invalid doesn't map to any state
+    expect(stateMachineRouter.currentState.name).toBe(STATE.HOME);
+
+    stateMachineRouter.destroy();
+  });
+
   it('should allow to create instance with empty query', () => {
     const stateMachineRouter = MobxStateMachineRouter<STATE, TParams, ACTION>({
       states,

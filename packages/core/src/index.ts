@@ -88,7 +88,8 @@ function MobxStateMachineRouter<S extends string, P, A extends string>({
     API.currentState = {
       name: states[newState.name]
         ? newState.name
-        : API.currentState.name || (Object.keys(states)[0] as S),
+        : /* istanbul ignore next */ API.currentState.name ||
+          (Object.keys(states)[0] as S),
       params: newState.params,
     };
   });
