@@ -10,6 +10,7 @@ export enum STATE {
   PRODUCTS = "PRODUCTS",
   PRODUCT_DETAIL = "PRODUCT_DETAIL",
   CONTACT = "CONTACT",
+  REACT_INTEGRATION = "REACT_INTEGRATION",
 }
 
 // Define the possible actions (navigation events)
@@ -19,6 +20,7 @@ export enum ACTION {
   goProducts = "goProducts",
   viewProduct = "viewProduct",
   goContact = "goContact",
+  goReactIntegration = "goReactIntegration",
 }
 
 // Define the params that can be passed between states
@@ -36,6 +38,7 @@ export const states: TStates<STATE, ACTION> = {
       [ACTION.goAbout]: STATE.ABOUT,
       [ACTION.goProducts]: STATE.PRODUCTS,
       [ACTION.goContact]: STATE.CONTACT,
+      [ACTION.goReactIntegration]: STATE.REACT_INTEGRATION,
     },
     url: "/",
   },
@@ -44,6 +47,7 @@ export const states: TStates<STATE, ACTION> = {
       [ACTION.goHome]: STATE.HOME,
       [ACTION.goProducts]: STATE.PRODUCTS,
       [ACTION.goContact]: STATE.CONTACT,
+      [ACTION.goReactIntegration]: STATE.REACT_INTEGRATION,
     },
     url: "/about",
   },
@@ -54,6 +58,7 @@ export const states: TStates<STATE, ACTION> = {
       [ACTION.goProducts]: STATE.PRODUCTS, // Self-transition to update params
       [ACTION.viewProduct]: STATE.PRODUCT_DETAIL,
       [ACTION.goContact]: STATE.CONTACT,
+      [ACTION.goReactIntegration]: STATE.REACT_INTEGRATION,
     },
     url: "/products",
   },
@@ -64,6 +69,7 @@ export const states: TStates<STATE, ACTION> = {
       [ACTION.goProducts]: STATE.PRODUCTS,
       [ACTION.viewProduct]: STATE.PRODUCT_DETAIL, // Can navigate to another product
       [ACTION.goContact]: STATE.CONTACT,
+      [ACTION.goReactIntegration]: STATE.REACT_INTEGRATION,
     },
     url: "/product",
   },
@@ -72,8 +78,18 @@ export const states: TStates<STATE, ACTION> = {
       [ACTION.goHome]: STATE.HOME,
       [ACTION.goAbout]: STATE.ABOUT,
       [ACTION.goProducts]: STATE.PRODUCTS,
+      [ACTION.goReactIntegration]: STATE.REACT_INTEGRATION,
     },
     url: "/contact",
+  },
+  [STATE.REACT_INTEGRATION]: {
+    actions: {
+      [ACTION.goHome]: STATE.HOME,
+      [ACTION.goAbout]: STATE.ABOUT,
+      [ACTION.goProducts]: STATE.PRODUCTS,
+      [ACTION.goContact]: STATE.CONTACT,
+    },
+    url: "/react-integration",
   },
 };
 
