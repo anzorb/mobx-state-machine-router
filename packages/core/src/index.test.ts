@@ -79,6 +79,17 @@ describe('init', () => {
     expect(stateMachineRouter.currentState.name).toBe(STATE.HOME);
   });
 
+  it('should fallback to first state when currentState.name is undefined', () => {
+    const stateMachineRouter = MobxStateMachineRouter<STATE, TParams, ACTION>({
+      states,
+      currentState: {
+        name: undefined as unknown as STATE,
+        params: {},
+      },
+    });
+    expect(stateMachineRouter.currentState.name).toBe(STATE.HOME);
+  });
+
   it('should allow to create instance with empty query', () => {
     const stateMachineRouter = MobxStateMachineRouter<STATE, TParams, ACTION>({
       states,

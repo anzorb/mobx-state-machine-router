@@ -356,3 +356,60 @@ describe('custom getters/setters - array', () => {
     ]);
   });
 });
+
+describe('serializer error handling', () => {
+  afterEach(() => {
+    window.location.hash = '#/';
+    jest.clearAllMocks();
+  });
+
+  it('should throw error when custom getter throws', () => {
+    let listener: ((update: { location: any }) => void) | null = null;
+
+    const mockHistory = {
+      push: jest.fn(),
+      listen: (fn: (update: { location: any }) => void) => {
+        listener = fn;
+      },
+      location: { pathname: '/', search: '' },
+    };
+
+    URLPersistence({
+      history: mockHistory,
+      serializers: {
+        activity: {
+          getter() {
+            throw new Error('getter error');
+          },
+        },
+      },
+    });
+
+    // Trigger the listener with a URL that has the param with broken getter
+    expect(() => {
+      listener!({ location: { pathname: '/work', search: '?activity=test' } });
+    }).toThrow('getter error');
+  });
+
+  it('should throw error when custom setter throws', () => {
+    const persistence = URLPersistence({
+      serializers: {
+        activity: {
+          setter() {
+            throw new Error('setter error');
+          },
+        },
+      },
+    });
+
+    expect(() => {
+      persistence.write(
+        {
+          name: 'WORK',
+          params: { activity: 'test' },
+        },
+        { WORK: { url: '/work' } },
+      );
+    }).toThrow('setter error');
+  });
+});
