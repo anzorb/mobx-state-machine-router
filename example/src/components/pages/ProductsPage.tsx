@@ -10,25 +10,31 @@ const products = [
   { id: "6", name: "Hash Routing", price: "Free", category: "routing" },
 ];
 
-const categories = ["all", "routing", "state", "framework", "tooling"];
+const categories = ["routing", "state", "framework", "tooling"];
 
 export const ProductsPage = observer(() => {
-  const currentCategory = router.currentState.params.category || "all";
+  const selectedCategories = router.currentState.params.categories || [];
   const searchTerm = router.currentState.params.search || "";
 
   const filteredProducts = products.filter((product) => {
     const matchesCategory =
-      currentCategory === "all" || product.category === currentCategory;
+      selectedCategories.length === 0 ||
+      selectedCategories.includes(product.category);
     const matchesSearch =
       !searchTerm ||
       product.name.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
-  const handleCategoryChange = (category: string) => {
+  const toggleCategory = (category: string) => {
+    const current = selectedCategories;
+    const newCategories = current.includes(category)
+      ? current.filter((c) => c !== category) // Remove if already selected
+      : [...current, category]; // Add if not selected
+
     router.emit("go-products", {
       ...router.currentState.params,
-      category: category === "all" ? undefined : category,
+      categories: newCategories.length > 0 ? newCategories : undefined,
     });
   };
 
@@ -39,34 +45,45 @@ export const ProductsPage = observer(() => {
     });
   };
 
+  const clearFilters = () => {
+    router.emit("go-products", {});
+  };
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-12">
       <h1 className="text-4xl font-bold text-gray-900 mb-2">Products</h1>
       <p className="text-gray-600 mb-8">
-        This page demonstrates query parameters. Filter and search - watch the
-        URL update!
+        This page demonstrates array query parameters. Click categories to
+        toggle selection - watch the URL update with multiple values!
       </p>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
         <div className="flex flex-col md:flex-row gap-6">
           <div className="flex-1">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Category
+              Categories{" "}
+              <span className="text-gray-400 font-normal">
+                (click to toggle, select multiple)
+              </span>
             </label>
             <div className="flex flex-wrap gap-2">
-              {categories.map((cat) => (
-                <button
-                  key={cat}
-                  className={`px-4 py-2 rounded-lg font-medium transition-colors capitalize ${
-                    currentCategory === cat
-                      ? "bg-indigo-600 text-white"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  }`}
-                  onClick={() => handleCategoryChange(cat)}
-                >
-                  {cat}
-                </button>
-              ))}
+              {categories.map((cat) => {
+                const isSelected = selectedCategories.includes(cat);
+                return (
+                  <button
+                    key={cat}
+                    className={`px-4 py-2 rounded-lg font-medium transition-colors capitalize ${
+                      isSelected
+                        ? "bg-indigo-600 text-white"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    }`}
+                    onClick={() => toggleCategory(cat)}
+                  >
+                    {cat}
+                    {isSelected && <span className="ml-2">✓</span>}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -128,7 +145,7 @@ export const ProductsPage = observer(() => {
           </p>
           <button
             className="bg-indigo-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-indigo-700 transition-colors"
-            onClick={() => router.emit("go-products", {})}
+            onClick={clearFilters}
           >
             Clear Filters
           </button>

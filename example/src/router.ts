@@ -26,7 +26,7 @@ export type Action =
 // Define the params that can be passed between states
 export type RouterParams = {
   productId?: string;
-  category?: string;
+  categories?: string[]; // Array of selected categories
   search?: string;
 };
 
@@ -94,8 +94,16 @@ export const states: TStates<State, Action> = {
   },
 };
 
-// Create URL persistence layer with hash routing
-const persistence = URLPersistence<State, RouterParams, Action>();
+// Create URL persistence layer with hash routing and custom serializers
+const persistence = URLPersistence<State, RouterParams, Action>({
+  serializers: {
+    // Custom serializer for array params - demonstrates array URL support
+    categories: {
+      getter: (value: string) => value.split(","),
+      setter: (value: string[]) => value.join(","),
+    },
+  },
+});
 
 // Create the router instance
 export const router = MobxStateMachineRouter<State, RouterParams, Action>({
