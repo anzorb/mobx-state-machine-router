@@ -1,6 +1,6 @@
 {
   "name": "@mobx-state-machine-router/url-persistence",
-  "version": "5.0.0",
+  "version": "5.0.1",
   "description": "URL persistence layer for MobX State Machine Router",
   "author": "Anzor Bashkhaz",
   "license": "MIT",
