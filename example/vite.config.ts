@@ -3,8 +3,8 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 
 // https://vite.dev/config/
-export default defineConfig({
-  base: process.env.NODE_ENV === "production" ? "/mobx-state-machine-router/" : "/",
+export default defineConfig(({ command }) => ({
+  base: command === "build" ? "/mobx-state-machine-router/" : "/",
   plugins: [react(), tailwindcss()],
   resolve: {
     dedupe: ["mobx", "mobx-react-lite"],
@@ -21,4 +21,4 @@ export default defineConfig({
       transformMixedEsModules: true,
     },
   },
-});
+}));
