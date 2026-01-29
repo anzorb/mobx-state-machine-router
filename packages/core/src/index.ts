@@ -1,10 +1,4 @@
-import {
-  action,
-  observable,
-  observe,
-  autorun,
-  IValueDidChange,
-} from 'mobx';
+import { action, observable, observe, autorun, IValueDidChange } from 'mobx';
 
 enum STATE {
   HOME = 'HOME',
@@ -31,7 +25,7 @@ export type TStates<E extends string, A extends string> = {
 export interface IMobxStateMachineRouterParams<
   S extends string,
   P,
-  A extends string
+  A extends string,
 > {
   states: TStates<S, A>;
   currentState?: {
@@ -59,7 +53,7 @@ export interface IMobxStateMachineRouter<S, P, A> {
 function transition<S extends string, A extends string>(
   states: TStates<S, A>,
   curState: S,
-  actionName: A
+  actionName: A,
 ) {
   const result = states[curState].actions[actionName];
 
@@ -70,7 +64,7 @@ export function observeParam<S, P, A>(
   object: IMobxStateMachineRouter<S, P, A>,
   property: 'currentState',
   paramName: string,
-  listener: (change: IValueDidChange<ICurrentState<S, P>>) => void
+  listener: (change: IValueDidChange<ICurrentState<S, P>>) => void,
 ) {
   return observe(object, property, (change) => {
     const { newValue, oldValue } = change;
@@ -110,11 +104,13 @@ function MobxStateMachineRouter<S extends string, P, A extends string>({
         params: currentState.params || ({} as P),
       },
       emit: action((actionName, params) => {
-        let newState;
-        let newParams = {};
         // determine new state to transition to
-        newState = transition<S, A>(states, API.currentState.name, actionName);
-        newParams = { ...params };
+        const newState = transition<S, A>(
+          states,
+          API.currentState.name,
+          actionName,
+        );
+        const newParams = { ...params };
 
         if (newState != null) {
           setCurrentState({
@@ -128,7 +124,7 @@ function MobxStateMachineRouter<S extends string, P, A extends string>({
       },
     } as IMobxStateMachineRouter<S, P, A>,
     {},
-    { deep: false }
+    { deep: false },
   );
 
   // subscribe to persistence and set currentState
@@ -149,7 +145,7 @@ function MobxStateMachineRouter<S extends string, P, A extends string>({
           });
         }
       },
-      { name: 'persistence-listener' }
+      { name: 'persistence-listener' },
     );
 
     const cleanUpObserve = observe(API, 'currentState', ({ newValue }) => {

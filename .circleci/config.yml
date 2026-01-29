@@ -1,25 +1,31 @@
 version: 2.1
 orbs:
-  codecov: codecov/codecov@1.0.5
+  codecov: codecov/codecov@4.1.0
 
 aliases:
   - &docker
-    - image: circleci/node:latest
+    - image: cimg/node:22.13
 
   - &environment
     TZ: /usr/share/zoneinfo/America/Los_Angeles
 
-  - &restore_yarn_cache
+  - &restore_pnpm_cache
     restore_cache:
-      name: Restore node_modules cache
+      name: Restore pnpm cache
       keys:
-        - v1-node-{{ arch }}-{{ .Branch }}-{{ checksum "yarn.lock" }}
-        - v1-node-{{ arch }}-{{ .Branch }}-
-        - v1-node-{{ arch }}-
-  - &run_yarn
+        - v1-pnpm-{{ arch }}-{{ .Branch }}-{{ checksum "pnpm-lock.yaml" }}
+        - v1-pnpm-{{ arch }}-{{ .Branch }}-
+        - v1-pnpm-{{ arch }}-
+
+  - &install_pnpm
+    run:
+      name: Install pnpm
+      command: corepack enable && corepack prepare pnpm@9.15.4 --activate
+
+  - &run_pnpm_install
     run:
       name: Install Packages
-      command: yarn --frozen-lockfile
+      command: pnpm install --frozen-lockfile
 
   - &attach_workspace
     at: build
@@ -32,15 +38,16 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Nodejs Version
+          name: Node.js Version
           command: node --version
-      - *restore_yarn_cache
-      - *run_yarn
+      - *install_pnpm
+      - *restore_pnpm_cache
+      - *run_pnpm_install
       - save_cache:
-          name: Save node_modules cache
-          key: v1-node-{{ arch }}-{{ .Branch }}-{{ checksum "yarn.lock" }}
+          name: Save pnpm cache
+          key: v1-pnpm-{{ arch }}-{{ .Branch }}-{{ checksum "pnpm-lock.yaml" }}
           paths:
-            - ~/.cache/yarn
+            - ~/.local/share/pnpm/store
 
   build:
     docker: *docker
@@ -48,11 +55,12 @@ jobs:
 
     steps:
       - checkout
-      - *restore_yarn_cache
-      - *run_yarn
+      - *install_pnpm
+      - *restore_pnpm_cache
+      - *run_pnpm_install
       - run:
           name: Pre-release build
-          command: yarn run prerelease
+          command: pnpm run prerelease
 
   coverage:
     docker: *docker
@@ -60,16 +68,14 @@ jobs:
 
     steps:
       - checkout
-      - *restore_yarn_cache
-      - *run_yarn
+      - *install_pnpm
+      - *restore_pnpm_cache
+      - *run_pnpm_install
       - run:
-          name: Run tests with JUnit as reporter
-          command: yarn run test:ci
+          name: Run tests with coverage
+          command: pnpm run test:ci
       - codecov/upload:
           file: 'coverage/lcov.info'
-          #path: coverage
-          #environment:
-          # JEST_JUNIT_OUTPUT: 'reports/junit/js-test-results.xml'
 
 workflows:
   version: 2

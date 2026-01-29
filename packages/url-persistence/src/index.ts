@@ -1,7 +1,7 @@
 import { createHashHistory, Location } from 'history';
 import { parse, ParsedQuery } from 'query-string';
 import { action, observable, toJS } from 'mobx';
-import { IPersistence } from '../../core/src';
+import { IPersistence } from '@mobx-state-machine-router/core';
 
 export interface ICurrentState {
   name: string;
@@ -29,7 +29,7 @@ const deserialize = (params, serializers: ISerializers | undefined): object => {
         throw new Error(err);
       }
     } else {
-      paramsObject[key] = params[key]
+      paramsObject[key] = params[key];
     }
   });
   return paramsObject;
@@ -69,14 +69,17 @@ export type LikeHistoryInterface = {
 const URLPersistence = <S extends string, P, A extends string>(options?: {
   serializers?: ISerializers;
   history?: LikeHistoryInterface;
-}):  IPersistence<S, P, A> => {
+}): IPersistence<S, P, A> => {
   const historyObject = options?.history || createHashHistory();
 
   const setStateFromLocation = action((location: Location) => {
     const params = parse(location.search);
     const name = decodeURIComponent(location.pathname);
     const paramsObject = deserialize(params, options?.serializers);
-    API.currentState = { name: name as S, params: <unknown>paramsObject as P };
+    API.currentState = {
+      name: name as S,
+      params: (<unknown>paramsObject) as P,
+    };
   });
 
   const API = observable(
@@ -100,7 +103,7 @@ const URLPersistence = <S extends string, P, A extends string>(options?: {
       },
     } as IPersistence<S, P, A>,
     {},
-    { deep: false }
+    { deep: false },
   );
 
   historyObject.listen((update) => {
@@ -110,5 +113,5 @@ const URLPersistence = <S extends string, P, A extends string>(options?: {
   setStateFromLocation(historyObject.location);
 
   return API;
-}
+};
 export default URLPersistence;
