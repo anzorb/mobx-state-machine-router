@@ -1,6 +1,6 @@
 {
   "name": "@mobx-state-machine-router/core",
-  "version": "5.0.1",
+  "version": "5.0.2",
   "description": "State Machine routing for MobX",
   "author": "Anzor Bashkhaz",
   "license": "MIT",
