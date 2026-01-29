@@ -30,8 +30,8 @@ npm install @mobx-state-machine-router/core mobx
 import MobxStateMachineRouter, { TStates } from '@mobx-state-machine-router/core';
 
 // 1. Define states and actions as string literal types
-type State = 'HOME' | 'PRODUCTS' | 'PRODUCT_DETAIL';
-type Action = 'viewProducts' | 'viewProduct' | 'goHome';
+type State = 'home' | 'products' | 'product-detail';
+type Action = 'go-products' | 'view-product' | 'go-home';
 
 type Params = {
   productId?: string;
@@ -39,19 +39,19 @@ type Params = {
 
 // 2. Define the state machine
 const states: TStates<State, Action> = {
-  HOME: {
-    actions: { viewProducts: 'PRODUCTS' },
+  home: {
+    actions: { 'go-products': 'products' },
   },
-  PRODUCTS: {
+  products: {
     actions: {
-      goHome: 'HOME',
-      viewProduct: 'PRODUCT_DETAIL',
+      'go-home': 'home',
+      'view-product': 'product-detail',
     },
   },
-  PRODUCT_DETAIL: {
+  'product-detail': {
     actions: {
-      goHome: 'HOME',
-      viewProducts: 'PRODUCTS',
+      'go-home': 'home',
+      'go-products': 'products',
     },
   },
 };
@@ -59,14 +59,14 @@ const states: TStates<State, Action> = {
 // 3. Create the router
 const router = MobxStateMachineRouter<State, Params, Action>({
   states,
-  currentState: { name: 'HOME', params: {} },
+  currentState: { name: 'home', params: {} },
 });
 
 // 4. Navigate
-router.emit('viewProducts');
-console.log(router.currentState.name); // 'PRODUCTS'
+router.emit('go-products');
+console.log(router.currentState.name); // 'products'
 
-router.emit('viewProduct', { productId: '123' });
+router.emit('view-product', { productId: '123' });
 console.log(router.currentState.params); // { productId: '123' }
 ```
 
@@ -82,13 +82,13 @@ const App = observer(() => {
   return (
     <div>
       <nav>
-        <button onClick={() => router.emit('goHome')}>Home</button>
-        <button onClick={() => router.emit('viewProducts')}>Products</button>
+        <button onClick={() => router.emit('go-home')}>Home</button>
+        <button onClick={() => router.emit('go-products')}>Products</button>
       </nav>
 
-      {name === 'HOME' && <HomePage />}
-      {name === 'PRODUCTS' && <ProductsPage />}
-      {name === 'PRODUCT_DETAIL' && <ProductDetail id={params.productId} />}
+      {name === 'home' && <HomePage />}
+      {name === 'products' && <ProductsPage />}
+      {name === 'product-detail' && <ProductDetail id={params.productId} />}
     </div>
   );
 });
@@ -120,8 +120,8 @@ router.currentState.params // Current params object
 Emit an action to transition states:
 
 ```typescript
-router.emit('goHome');
-router.emit('viewProduct', { productId: '123' });
+router.emit('go-home');
+router.emit('view-product', { productId: '123' });
 ```
 
 ### `router.destroy()`
@@ -152,8 +152,8 @@ observe(router, 'currentState', ({ newValue }) => {
 
 // Intercept and guard navigation
 intercept(router, 'currentState', (change) => {
-  if (change.newValue.name === 'ADMIN' && !isLoggedIn) {
-    return { ...change, newValue: { name: 'LOGIN', params: {} } };
+  if (change.newValue.name === 'admin' && !isLoggedIn) {
+    return { ...change, newValue: { name: 'login', params: {} } };
   }
   return change;
 });

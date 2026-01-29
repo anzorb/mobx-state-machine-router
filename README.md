@@ -56,8 +56,8 @@ pnpm add @mobx-state-machine-router/core mobx
 import MobxStateMachineRouter, { TStates } from '@mobx-state-machine-router/core';
 
 // 1. Define your states and actions as string literal types
-type State = 'HOME' | 'PRODUCTS' | 'PRODUCT_DETAIL';
-type Action = 'viewProducts' | 'viewProduct' | 'goHome';
+type State = 'home' | 'products' | 'product-detail';
+type Action = 'go-products' | 'view-product' | 'go-home';
 
 type Params = {
   productId?: string;
@@ -65,21 +65,21 @@ type Params = {
 
 // 2. Define the state machine
 const states: TStates<State, Action> = {
-  HOME: {
+  home: {
     actions: {
-      viewProducts: 'PRODUCTS',
+      'go-products': 'products',
     },
   },
-  PRODUCTS: {
+  products: {
     actions: {
-      goHome: 'HOME',
-      viewProduct: 'PRODUCT_DETAIL',
+      'go-home': 'home',
+      'view-product': 'product-detail',
     },
   },
-  PRODUCT_DETAIL: {
+  'product-detail': {
     actions: {
-      goHome: 'HOME',
-      viewProducts: 'PRODUCTS',
+      'go-home': 'home',
+      'go-products': 'products',
     },
   },
 };
@@ -87,15 +87,15 @@ const states: TStates<State, Action> = {
 // 3. Create the router
 const router = MobxStateMachineRouter<State, Params, Action>({
   states,
-  currentState: { name: 'HOME', params: {} },
+  currentState: { name: 'home', params: {} },
 });
 
 // 4. Navigate by emitting actions
-router.emit('viewProducts');
-console.log(router.currentState.name); // 'PRODUCTS'
+router.emit('go-products');
+console.log(router.currentState.name); // 'products'
 
 // Pass params with navigation
-router.emit('viewProduct', { productId: '123' });
+router.emit('view-product', { productId: '123' });
 console.log(router.currentState.params); // { productId: '123' }
 ```
 
@@ -111,13 +111,13 @@ const App = observer(() => {
   return (
     <div>
       <nav>
-        <button onClick={() => router.emit('goHome')}>Home</button>
-        <button onClick={() => router.emit('viewProducts')}>Products</button>
+        <button onClick={() => router.emit('go-home')}>Home</button>
+        <button onClick={() => router.emit('go-products')}>Products</button>
       </nav>
 
-      {name === 'HOME' && <HomePage />}
-      {name === 'PRODUCTS' && <ProductsPage />}
-      {name === 'PRODUCT_DETAIL' && <ProductDetail id={params.productId} />}
+      {name === 'home' && <HomePage />}
+      {name === 'products' && <ProductsPage />}
+      {name === 'product-detail' && <ProductDetail id={params.productId} />}
     </div>
   );
 });
@@ -154,8 +154,8 @@ router.currentState.params // Current params object
 Transition to a new state by emitting an action.
 
 ```typescript
-router.emit('goHome');                      // Simple navigation
-router.emit('viewProduct', { id: '1' });    // With params
+router.emit('go-home');                        // Simple navigation
+router.emit('view-product', { id: '1' });      // With params
 ```
 
 ### `observeParam(router, property, paramName, callback)`
@@ -197,8 +197,8 @@ import { intercept } from 'mobx';
 
 intercept(router, 'currentState', (change) => {
   // Redirect unauthenticated users
-  if (change.newValue.name === 'ADMIN' && !isLoggedIn) {
-    return { ...change, newValue: { name: 'LOGIN', params: {} } };
+  if (change.newValue.name === 'admin' && !isLoggedIn) {
+    return { ...change, newValue: { name: 'login', params: {} } };
   }
   return change;
 });
@@ -210,10 +210,10 @@ intercept(router, 'currentState', (change) => {
 import interceptAsync from 'mobx-async-intercept';
 
 interceptAsync(router, 'currentState', async (change) => {
-  if (change.newValue.name === 'CHECKOUT') {
+  if (change.newValue.name === 'checkout') {
     const canCheckout = await validateCart();
     if (!canCheckout) {
-      return { ...change, newValue: { name: 'CART_ERROR', params: {} } };
+      return { ...change, newValue: { name: 'cart-error', params: {} } };
     }
   }
   return change;
@@ -234,16 +234,16 @@ import URLPersistence from '@mobx-state-machine-router/url-persistence';
 
 // Add URL to each state
 const states: TStates<State, Action> = {
-  HOME: {
-    actions: { viewProducts: 'PRODUCTS' },
+  home: {
+    actions: { 'go-products': 'products' },
     url: '/',
   },
-  PRODUCTS: {
-    actions: { viewProduct: 'PRODUCT_DETAIL' },
+  products: {
+    actions: { 'view-product': 'product-detail' },
     url: '/products',
   },
-  PRODUCT_DETAIL: {
-    actions: { viewProducts: 'PRODUCTS' },
+  'product-detail': {
+    actions: { 'go-products': 'products' },
     url: '/product',
   },
 };
@@ -251,12 +251,12 @@ const states: TStates<State, Action> = {
 // Create router with URL persistence
 const router = MobxStateMachineRouter<State, Params, Action>({
   states,
-  currentState: { name: 'HOME', params: {} },
+  currentState: { name: 'home', params: {} },
   persistence: URLPersistence(),  // Uses hash history by default
 });
 
 // Navigation now updates the URL!
-router.emit('viewProduct', { productId: '123' });
+router.emit('view-product', { productId: '123' });
 // URL: /#/product?productId=123
 ```
 
@@ -312,10 +312,10 @@ This library is written in TypeScript and provides full type inference:
 
 ```typescript
 // States and actions are type-checked
-router.emit('invalidAction'); // TS Error!
+router.emit('invalid-action'); // TS Error!
 
 // Params are typed
-router.emit('viewProduct', { productId: 123 }); // TS Error if wrong type
+router.emit('view-product', { productId: 123 }); // TS Error if wrong type
 ```
 
 ## Packages
