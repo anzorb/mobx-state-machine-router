@@ -52,6 +52,14 @@ export const Navigation = observer(() => {
               Contact
             </button>
           </li>
+          <li>
+            <button
+              className={navButtonClass(STATE.REACT_INTEGRATION)}
+              onClick={() => router.emit(ACTION.goReactIntegration)}
+            >
+              React Integration
+            </button>
+          </li>
         </ul>
 
         <div className="text-sm text-gray-500">

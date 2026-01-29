@@ -6,6 +6,7 @@ import { AboutPage } from "./components/pages/AboutPage";
 import { ProductsPage } from "./components/pages/ProductsPage";
 import { ProductDetailPage } from "./components/pages/ProductDetailPage";
 import { ContactPage } from "./components/pages/ContactPage";
+import { ReactIntegrationPage } from "./components/pages/ReactIntegrationPage";
 
 const App = observer(() => {
   const currentState = router.currentState.name;
@@ -22,6 +23,8 @@ const App = observer(() => {
         return <ProductDetailPage />;
       case STATE.CONTACT:
         return <ContactPage />;
+      case STATE.REACT_INTEGRATION:
+        return <ReactIntegrationPage />;
       default:
         return <HomePage />;
     }
