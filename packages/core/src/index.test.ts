@@ -144,7 +144,7 @@ describe('MobX state machine router', () => {
       stateMachineRouter.emit(ACTION.slack, { activity: 'daydreaming' });
       expect(stateMachineRouter.currentState.name).toBe('WORK');
       expect(stateMachineRouter.currentState.params.activity).toEqual(
-        'daydreaming'
+        'daydreaming',
       );
       stateMachineRouter.emit(ACTION.goHome, {
         ...stateMachineRouter.currentState.params,
@@ -304,7 +304,7 @@ describe('intercepting state changes', () => {
     await ms(30);
     expect(stateMachineRouter.currentState.name).toBe('WORK');
     expect(stateMachineRouter.currentState.params.activity).toBe(
-      'working-hard'
+      'working-hard',
     );
   });
 });

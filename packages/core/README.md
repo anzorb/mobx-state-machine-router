@@ -1,152 +1,120 @@
-[![CircleCI](https://circleci.com/gh/interestingChoice/mobx-state-machine-router.svg?style=svg)](https://circleci.com/gh/interestingChoice/mobx-state-machine-router)
+# @mobx-state-machine-router/core
 
-[![codecov](https://codecov.io/gh/interestingChoice/mobx-state-machine-router/branch/master/graph/badge.svg)](https://codecov.io/gh/interestingChoice/mobx-state-machine-router)
+> Declarative, predictable routing powered by finite state machines and MobX
 
-### Motivation
+[![npm version](https://img.shields.io/npm/v/@mobx-state-machine-router/core.svg?style=flat-square)](https://www.npmjs.com/package/@mobx-state-machine-router/core)
+[![npm downloads](https://img.shields.io/npm/dm/@mobx-state-machine-router/core.svg?style=flat-square)](https://www.npmjs.com/package/@mobx-state-machine-router/core)
 
-- State Machines are great for declarative, predictable UI transitions
-- MobX is great at re-rendering UIs, observing and intercepting changes
-- Combining these two, and making URL persistence separate (and optional), brings modern, simple, predictable routing to React and React Native apps using Mobx 4+
+## Installation
 
-### How it works
-
-- A State Map is defined with a set of states and their actions:
-  ```js
-  {
-    'HOME': {
-        actions: {
-            goToWork: 'WORK'
-        }
-    },
-    'WORK': {...
-  ```
-- Emitting an action produces a new state
-  ```
-  emit(actionName: string, query: object = {})
-  ```
-- Components are re-rendered automatically thanks to Mobx' `Observer` HOC and `@observer` decorator
-- Side Effects can also happen when state/params change using React's `useEffect()`, `mobx.observe()` or `mobx.autorun()`
-
-  ```js
-  useEffect(() => {
-    // do something with state
-  }, [router.currentState]);
-  ```
-
-- `mobx.intercept` can be used for error handling, and `interceptAsync` can be used for async side-effects
-- URL persistence is optional and separate
-- First class React Native support
-
----
-
-### Installation
-
-```js
-npm install @mobx-state-machine-router/core
+```bash
+npm install @mobx-state-machine-router/core mobx
 ```
 
-or
+## Quick Start
 
-```js
-yarn add @mobx-state-machine-router/core
-```
+```typescript
+import MobxStateMachineRouter, { TStates } from '@mobx-state-machine-router/core';
 
----
+enum STATE {
+  HOME = 'HOME',
+  ABOUT = 'ABOUT',
+}
 
-### Basics
+enum ACTION {
+  goAbout = 'goAbout',
+  goHome = 'goHome',
+}
 
-```js
-const states = {
-    'HOME': {
-        actions: {
-            goToWork: 'WORK'
-        }
-    },
-    'WORK': {
-        actions: {
-            goHome: 'HOME'
-        }
-    }
+const states: TStates<STATE, ACTION> = {
+  [STATE.HOME]: {
+    actions: { [ACTION.goAbout]: STATE.ABOUT },
+  },
+  [STATE.ABOUT]: {
+    actions: { [ACTION.goHome]: STATE.HOME },
+  },
 };
 
-stateMachineRouter.emit('goToWork');
+const router = MobxStateMachineRouter({
+  states,
+  currentState: { name: STATE.HOME, params: {} },
+});
 
-console.log(stateMachineRouter.currentState.name);
-> 'WORK'
+// Navigate
+router.emit(ACTION.goAbout);
+console.log(router.currentState.name); // 'ABOUT'
 ```
 
----
+## API
 
-### Passing Params
+### `MobxStateMachineRouter(options)`
 
-All params are passed as mobx observables, allowing to `observe` and `intercept` them. Both the `currentState` object as well as individual params can be observed.
+Creates a router instance.
 
-```js
+| Option | Type | Description |
+|--------|------|-------------|
+| `states` | `TStates<S, A>` | State machine definition |
+| `currentState` | `{ name: S, params: P }` | Initial state (optional) |
+| `persistence` | `IPersistence` | URL persistence layer (optional) |
 
-stateMachineRouter.emit('goToWork', { method: 'car' });
+### `router.currentState`
 
-console.log(stateMachineRouter.currentState);
-{
-    name: 'WORK',
-    params: {
-        method: 'car'
-    }
-}
+Observable object with current state:
+
+```typescript
+router.currentState.name   // Current state name
+router.currentState.params // Current params
 ```
 
----
+### `router.emit(action, params?)`
 
-### Observing state changes
+Emit an action to transition states:
 
-```js
-observe(stateMachineRouter, 'currentState', () => {});
-observe(stateMachineRouter.currentState.params, 'method', () => {});
+```typescript
+router.emit(ACTION.goAbout);
+router.emit(ACTION.viewItem, { id: '123' });
 ```
 
----
+### `router.destroy()`
 
-### Intercepting state changes
+Clean up subscriptions.
 
-```js
-// reject state change
-intercept(stateMachineRouter, 'currentState', object => {
-  if (!loggedOut) {
-    return { ...object, newValue: { name: 'LOGIN' } };
-  }
-  return object;
+### `observeParam(router, property, paramName, callback)`
+
+Observe a specific param for changes:
+
+```typescript
+import { observeParam } from '@mobx-state-machine-router/core';
+
+observeParam(router, 'currentState', 'id', (change) => {
+  console.log('id changed:', change.newValue);
 });
 ```
 
-```js
-import interceptAsync from 'mobx-intercept-async';
+## With React
 
-// reject state change
-interceptAsync(stateMachineRouter, 'currentState', async object => {
-  // log user in
-  if (await login(object.newValue.params.userId)) {
-    return object;
-  }
-  return { ...object, newValue: { name: 'LOGIN_ERROR' } };
-});
-```
+```tsx
+import { observer } from 'mobx-react-lite';
 
----
-
-### Rendering UI Elements
-
-The Router can be accessed in using React's Context API or other means. Components wrapped in observer will re-render whenever state changes.
-
-```jsx
-import { observer } from 'mobx-react';
-
-export const App = observer(() => {
-  const { currentState } = router;
-
+const App = observer(() => {
   return (
-    <>
-    { currentState.name === 'home' && <Home> }
-    { currentState.name === 'about' && <About> }
-    </>
-  )
+    <div>
+      {router.currentState.name === STATE.HOME && <Home />}
+      {router.currentState.name === STATE.ABOUT && <About />}
+    </div>
+  );
 });
 ```
+
+## Full Documentation
+
+See the [main README](https://github.com/anzorb/mobx-state-machine-router#readme) for complete documentation including:
+
+- Observing & intercepting state changes
+- URL persistence
+- TypeScript usage
+- Examples
+
+## License
+
+MIT

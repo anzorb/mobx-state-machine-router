@@ -1,7 +1,9 @@
 import { observe, intercept } from 'mobx';
 import URLPersistence from '.';
-import { IMobxStateMachineRouter, TStates } from '../../core/src';
-import MobxStateMachineRouter from '../../core/src';
+import MobxStateMachineRouter, {
+  IMobxStateMachineRouter,
+  TStates,
+} from '@mobx-state-machine-router/core';
 
 const ms = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -89,7 +91,7 @@ describe('URL Persistence', () => {
         new: {
           url: '/new',
         },
-      }
+      },
     );
     expect(window.location.hash).toEqual('#/new?hola=amigos&this=is');
   });
@@ -160,7 +162,7 @@ describe('with URL persistence', () => {
     stateMachineRouter.emit(ACTION.goToWork);
     stateMachineRouter.emit(ACTION.slack, { activity: '%+-/!@#$^&*() text' });
     expect(window.location.hash).toBe(
-      '#/work?activity=%25%2B-%2F!%40%23%24%5E%26*()%20text'
+      '#/work?activity=%25%2B-%2F!%40%23%24%5E%26*()%20text',
     );
   });
 
@@ -169,7 +171,7 @@ describe('with URL persistence', () => {
       '/work?activity=%25%2B-%2F!%40%23%24%5E%26*()%20text';
     await ms(10);
     expect(stateMachineRouter.currentState.params.activity).toBe(
-      '%+-/!@#$^&*() text'
+      '%+-/!@#$^&*() text',
     );
   });
 
@@ -320,11 +322,7 @@ describe('custom getters/setters - array', () => {
         },
       },
     });
-    stateMachineRouter = MobxStateMachineRouter<
-      STATE,
-      TParams,
-      ACTION
-    >({
+    stateMachineRouter = MobxStateMachineRouter<STATE, TParams, ACTION>({
       states,
       currentState: {
         name: STATE.HOME,
@@ -345,7 +343,7 @@ describe('custom getters/setters - array', () => {
   it('should allow users to specify custom serializer', () => {
     stateMachineRouter.emit(ACTION.goToWork, { activity: ['bus', 'walking'] });
     expect(window.location.hash).toBe(
-      '#/work?activity=%5B%22bus%22,%22walking%22%5D'
+      '#/work?activity=%5B%22bus%22,%22walking%22%5D',
     );
   });
 

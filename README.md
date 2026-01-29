@@ -1,220 +1,361 @@
-[![CircleCI](https://circleci.com/gh/anzorb/mobx-state-machine-router.svg?style=svg)](https://circleci.com/gh/anzorb/mobx-state-machine-router)
+<p align="center">
+  <img src="https://raw.githubusercontent.com/mobxjs/mobx/main/docs/assets/mobx.png" alt="MobX" width="80" />
+</p>
 
-[![codecov](https://codecov.io/gh/anzorb/mobx-state-machine-router/branch/master/graph/badge.svg)](https://codecov.io/gh/anzorb/mobx-state-machine-router)
+<h1 align="center">MobX State Machine Router</h1>
 
-### Motivation
+<p align="center">
+  <strong>Declarative, predictable routing for React & React Native powered by finite state machines and MobX</strong>
+</p>
 
-- State Machines are great for declarative, predictable UI transitions
-- MobX is great at re-rendering UIs, observing and intercepting changes
-- Combining these two, and making URL persistence separate (and optional), brings modern, simple, predictable routing to React and React Native apps using Mobx 4+
+<p align="center">
+  <a href="https://www.npmjs.com/package/@mobx-state-machine-router/core"><img src="https://img.shields.io/npm/v/@mobx-state-machine-router/core.svg?style=flat-square" alt="npm version" /></a>
+  <a href="https://www.npmjs.com/package/@mobx-state-machine-router/core"><img src="https://img.shields.io/npm/dm/@mobx-state-machine-router/core.svg?style=flat-square" alt="npm downloads" /></a>
+  <a href="https://github.com/anzorb/mobx-state-machine-router/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/anzorb/mobx-state-machine-router/ci.yml?branch=master&style=flat-square" alt="CI" /></a>
+  <a href="https://codecov.io/gh/anzorb/mobx-state-machine-router"><img src="https://img.shields.io/codecov/c/github/anzorb/mobx-state-machine-router?style=flat-square" alt="codecov" /></a>
+  <a href="https://github.com/anzorb/mobx-state-machine-router/blob/master/LICENSE"><img src="https://img.shields.io/npm/l/@mobx-state-machine-router/core.svg?style=flat-square" alt="license" /></a>
+</p>
 
-### How it works
+<p align="center">
+  <a href="https://anzorb.github.io/mobx-state-machine-router/">Live Demo</a> •
+  <a href="#installation">Installation</a> •
+  <a href="#quick-start">Quick Start</a> •
+  <a href="#api">API</a> •
+  <a href="#url-persistence">URL Persistence</a> •
+  <a href="#examples">Examples</a>
+</p>
 
-- A State Map is defined with a set of states and their actions (example in typescript):
+---
 
-  ```typescript
-  const states: TStates<STATE, ACTION> = {
-    [STATE.HOME]: {
-      actions: {
-        [ACTION.goToWork]: STATE.WORK,
-        [ACTION.clean]: STATE.HOME,
-      },
-      url: '/',
-    },
-    [STATE.WORK]: {
-      actions: {
-        [ACTION.goHome]: STATE.HOME,
-        [ACTION.slack]: STATE.WORK,
-        [ACTION.getFood]: STATE['WORK/LUNCHROOM'],
-      },
-      url: '/work',
-    },
-  };
-  ```
+## Why?
 
-- Emitting an action produces a new state
-  ```typescript
-  IMobxStateMachineRouter<STATE, PARAM, ACTION>.emit: (actionName: ACTION, params?: PARAM | undefined) => void
-  ```
-- Components are re-rendered automatically thanks to Mobx' `Observer` HOC and `@observer` decorator
-- Side Effects can also happen when state/params change using React's `useEffect()`, `mobx.observe()` or `mobx.autorun()`
+Traditional routers map URLs to components. **MobX State Machine Router** takes a different approach:
 
-  ```js
-  useEffect(() => {
-    // do something with state
-  }, [router.currentState]);
-  ```
+- **🎯 State Machine First** — Define valid states and transitions. Invalid navigation is impossible by design.
+- **⚡ MobX Powered** — Reactive state updates with fine-grained re-rendering. No unnecessary renders.
+- **🔗 URL Persistence Optional** — Works great without URLs (React Native) or with hash/browser history.
+- **🔒 Type Safe** — Full TypeScript support with inferred types for states, actions, and params.
+- **🪶 Lightweight** — ~3KB gzipped with zero dependencies (MobX is a peer dependency).
 
-- `mobx.intercept` can be used for error handling, and `interceptAsync` can be used for async side-effects
-- URL persistence is optional and separate
-- First class React Native support
+## Installation
 
-### Installation
+```bash
+# npm
+npm install @mobx-state-machine-router/core mobx
 
-```js
-npm install @mobx-state-machine-router/core
+# yarn
+yarn add @mobx-state-machine-router/core mobx
+
+# pnpm
+pnpm add @mobx-state-machine-router/core mobx
 ```
 
-or
-
-```js
-yarn add @mobx-state-machine-router/core
-```
-
-### Basics
+## Quick Start
 
 ```typescript
+import MobxStateMachineRouter, { TStates } from '@mobx-state-machine-router/core';
+
+// 1. Define your states and actions
 enum STATE {
   HOME = 'HOME',
-  WORK = 'WORK'
+  PRODUCTS = 'PRODUCTS',
+  PRODUCT_DETAIL = 'PRODUCT_DETAIL',
 }
 
 enum ACTION {
-  goToWork = 'goToWork',
-  clean = 'clean',
-  slack = 'slack',
-  ...
+  viewProducts = 'viewProducts',
+  viewProduct = 'viewProduct',
+  goHome = 'goHome',
 }
 
-type TParams = {
-  activity?: string | null;
-};
-
+// 2. Define the state machine
 const states: TStates<STATE, ACTION> = {
   [STATE.HOME]: {
     actions: {
-      [ACTION.goToWork]: STATE.WORK,
-      [ACTION.clean]: STATE.HOME,
+      [ACTION.viewProducts]: STATE.PRODUCTS,
     },
-    url: '/', // specify URL if using URLPersistence package
   },
-  [STATE.WORK]: {
+  [STATE.PRODUCTS]: {
     actions: {
       [ACTION.goHome]: STATE.HOME,
-      [ACTION.slack]: STATE.WORK,
-    },
-    url: '/work', // specify URL if using URLPersistence package
-  }
-};
-
-// initialize router
-const stateMachineRouter = MobxStateMachineRouter<STATE, TParams, ACTION>({
-  states,
-  currentState: {
-    name: STATE.HOME,
-    params: {
-      activity: null,
+      [ACTION.viewProduct]: STATE.PRODUCT_DETAIL,
     },
   },
+  [STATE.PRODUCT_DETAIL]: {
+    actions: {
+      [ACTION.goHome]: STATE.HOME,
+      [ACTION.viewProducts]: STATE.PRODUCTS,
+    },
+  },
+};
+
+// 3. Create the router
+const router = MobxStateMachineRouter({
+  states,
+  currentState: { name: STATE.HOME, params: {} },
 });
 
-stateMachineRouter.emit(ACTION.goToWork);
+// 4. Navigate by emitting actions
+router.emit(ACTION.viewProducts);
+console.log(router.currentState.name); // 'PRODUCTS'
 
-console.log(stateMachineRouter.currentState.name);
-> 'WORK'
-
-stateMachineRouter.emit(ACTION.goToWork);
-> 'WORK' // ==> ignored as only the HOME state is allowed to "goToWork"
+// Pass params with navigation
+router.emit(ACTION.viewProduct, { productId: '123' });
+console.log(router.currentState.params); // { productId: '123' }
 ```
 
-### Passing Params
+## Usage with React
 
-State params can be passed in as follows:
+```tsx
+import { observer } from 'mobx-react-lite';
+import { router, STATE, ACTION } from './router';
 
-```js
+const App = observer(() => {
+  const { name, params } = router.currentState;
 
-stateMachineRouter.emit(ACTION.goToWork, { method: 'car' });
+  return (
+    <div>
+      <nav>
+        <button onClick={() => router.emit(ACTION.goHome)}>Home</button>
+        <button onClick={() => router.emit(ACTION.viewProducts)}>Products</button>
+      </nav>
 
-console.log(stateMachineRouter.currentState);
-{
-    name: 'WORK',
-    params: {
-        method: 'car'
-    }
-}
+      {name === STATE.HOME && <HomePage />}
+      {name === STATE.PRODUCTS && <ProductsPage />}
+      {name === STATE.PRODUCT_DETAIL && <ProductDetail id={params.productId} />}
+    </div>
+  );
+});
 ```
 
-### Observing state changes
+## API
 
-Observing state changes is done using mobx's `observe`, and more granularly using `observeParam`:
+### `MobxStateMachineRouter(options)`
 
-```js
-import { observe } from 'mobx';
+Creates a new router instance.
+
+```typescript
+const router = MobxStateMachineRouter<States, Params, Actions>({
+  states: TStates<States, Actions>,  // State machine definition
+  currentState?: {                    // Initial state (optional)
+    name: States,
+    params: Params,
+  },
+  persistence?: IPersistence,         // URL persistence layer (optional)
+});
+```
+
+### `router.currentState`
+
+Observable object containing the current state name and params.
+
+```typescript
+router.currentState.name   // Current state name
+router.currentState.params // Current params object
+```
+
+### `router.emit(action, params?)`
+
+Transition to a new state by emitting an action.
+
+```typescript
+router.emit(ACTION.goHome);                    // Simple navigation
+router.emit(ACTION.viewProduct, { id: '1' });  // With params
+```
+
+### `observeParam(router, property, paramName, callback)`
+
+Observe changes to a specific param.
+
+```typescript
 import { observeParam } from '@mobx-state-machine-router/core';
 
-observe(stateMachineRouter, 'currentState', () => {});
-observeParam(stateMachineRouter, 'currentState', 'method', () => {});
+observeParam(router, 'currentState', 'productId', (change) => {
+  console.log('productId changed:', change.newValue);
+});
 ```
 
-### Intercepting state changes
+## Observing & Intercepting
 
-Intercepting state changes can be used to either redirect to a different state, or do nothing (`return null`);
+### Observe State Changes
 
-Here's an example of a synchronous intercept:
+```typescript
+import { observe, autorun } from 'mobx';
 
-```js
+// React to any state change
+observe(router, 'currentState', ({ newValue }) => {
+  console.log('Navigated to:', newValue.name);
+});
+
+// Or use autorun for reactive effects
+autorun(() => {
+  analytics.track('page_view', { page: router.currentState.name });
+});
+```
+
+### Intercept State Changes
+
+Guard navigation or redirect users:
+
+```typescript
 import { intercept } from 'mobx';
 
-// reject state change
-intercept(stateMachineRouter, 'currentState', (change) => {
-  if (!loggedOut) {
-    return { ...change, newValue: { name: STATE.LOGIN } };
+intercept(router, 'currentState', (change) => {
+  // Redirect unauthenticated users
+  if (change.newValue.name === STATE.ADMIN && !isLoggedIn) {
+    return { ...change, newValue: { name: STATE.LOGIN, params: {} } };
   }
   return change;
 });
 ```
 
-Here's an example of a asynchronous intercept:
-
-```js
-import interceptAsync from 'mobx-intercept-async';
-
-// reject state change
-interceptAsync(stateMachineRouter, 'currentState', async (change) => {
-  // log user in
-  if (await login(userId)) {
-    return change;
-  }
-  return { ...change, newValue: { name: STATE.LOGIN_ERROR } };
-});
-```
-
-### Rendering UI Elements
-
-The Router can be accessed in using React's Context API or other means. Components wrapped in observer will re-render whenever state changes.
-
-```jsx
-import { observer } from 'mobx-react';
-
-export const App = observer(() => {
-  const { currentState } = router;
-
-  return (
-    <>
-    { currentState.name === STATE.HOME && <Home> }
-    { currentState.name === STATE.ABOUT && <About> }
-    </>
-  )
-});
-```
-
-### Persistence
-
-1. Install:
-
-`yarn add @mobx-state-machine-router/url-persistence history`
-
-2. Initialize with your choice of `history`
+### Async Interception
 
 ```typescript
-const stateMachineRouter = MobxStateMachineRouter<STATE, TParams, ACTION>({
-  states,
-  currentState: {
-    name: STATE.HOME,
-    params: {
-      activity: null,
-    },
-  },
-  persistence: URLPersistence<STATE, TParams2, ACTION>(createHashHistory()),
+import interceptAsync from 'mobx-async-intercept';
+
+interceptAsync(router, 'currentState', async (change) => {
+  if (change.newValue.name === STATE.CHECKOUT) {
+    const canCheckout = await validateCart();
+    if (!canCheckout) {
+      return { ...change, newValue: { name: STATE.CART_ERROR, params: {} } };
+    }
+  }
+  return change;
 });
 ```
+
+## URL Persistence
+
+Add URL synchronization with hash or browser history:
+
+```bash
+pnpm add @mobx-state-machine-router/url-persistence history
+```
+
+```typescript
+import MobxStateMachineRouter from '@mobx-state-machine-router/core';
+import URLPersistence from '@mobx-state-machine-router/url-persistence';
+
+// Add URL to each state
+const states = {
+  [STATE.HOME]: {
+    actions: { [ACTION.viewProducts]: STATE.PRODUCTS },
+    url: '/',
+  },
+  [STATE.PRODUCTS]: {
+    actions: { [ACTION.viewProduct]: STATE.PRODUCT_DETAIL },
+    url: '/products',
+  },
+  [STATE.PRODUCT_DETAIL]: {
+    actions: { [ACTION.viewProducts]: STATE.PRODUCTS },
+    url: '/product',
+  },
+};
+
+// Create router with URL persistence
+const router = MobxStateMachineRouter({
+  states,
+  currentState: { name: STATE.HOME, params: {} },
+  persistence: URLPersistence(),  // Uses hash history by default
+});
+
+// Navigation now updates the URL!
+router.emit(ACTION.viewProduct, { productId: '123' });
+// URL: /#/product?productId=123
+```
+
+### Custom History
+
+```typescript
+import { createBrowserHistory, createMemoryHistory } from 'history';
+
+// Browser history (requires server configuration)
+URLPersistence({ history: createBrowserHistory() });
+
+// Memory history (useful for testing)
+URLPersistence({ history: createMemoryHistory() });
+```
+
+### Custom Serializers
+
+Handle complex param types:
+
+```typescript
+URLPersistence({
+  serializers: {
+    filters: {
+      getter: (value) => JSON.parse(decodeURIComponent(value)),
+      setter: (value) => encodeURIComponent(JSON.stringify(value)),
+    },
+  },
+});
+```
+
+## Examples
+
+**[Live Demo](https://anzorb.github.io/mobx-state-machine-router/)** — Try it in your browser!
+
+Check out the [example app](./example) for a complete demo with:
+
+- Multi-page navigation
+- URL persistence with hash routing  
+- Query parameter filtering
+- TypeScript throughout
+
+Run locally:
+
+```bash
+cd example
+pnpm install
+pnpm dev
+```
+
+## TypeScript
+
+This library is written in TypeScript and provides full type inference:
+
+```typescript
+// States and actions are type-checked
+router.emit(ACTION.invalidAction); // TS Error!
+
+// Params are typed
+router.emit(ACTION.viewProduct, { productId: 123 }); // TS Error if wrong type
+```
+
+## Packages
+
+| Package | Description |
+|---------|-------------|
+| [@mobx-state-machine-router/core](./packages/core) | Core router with state machine logic |
+| [@mobx-state-machine-router/url-persistence](./packages/url-persistence) | URL synchronization with hash/browser history |
+
+## Requirements
+
+- MobX 4.x, 5.x, or 6.x
+- Node.js 18+
+
+## Contributing
+
+Contributions are welcome! Please read our contributing guidelines before submitting a PR.
+
+```bash
+# Install dependencies
+pnpm install
+
+# Run tests
+pnpm test
+
+# Run tests in watch mode
+pnpm test:watch
+
+# Build packages
+pnpm build
+
+# Run example app
+cd example && pnpm dev
+```
+
+## License
+
+MIT © [Anzor Bashkhaz](https://github.com/anzorb)

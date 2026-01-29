@@ -1,31 +1,23 @@
+/** @type {import('jest').Config} */
 module.exports = {
-  collectCoverage: true,
-
-
-  collectCoverageFrom: [
-    './package*/**/*.{js,ts}',
-    '!**/*.test.{js,ts}',
-    '!**/lib/**/*',
-    '!**/mock.js',
-    '!**/dist/**/*',
-    '!**/**/jest.config.js',
-  ],
-
-  coverageDirectory: './coverage',
-
+  preset: "ts-jest",
+  testEnvironment: "jsdom",
+  rootDir: ".",
   transform: {
-    '^.+\\.ts?$': 'ts-jest',
+    "^.+\\.tsx?$": "ts-jest",
   },
-
-  coverageReporters: ['lcov', 'cobertura'],
-
-  preset: 'ts-jest',
-
-  rootDir: __dirname,
-  testEnvironment: 'jsdom',
-  // runner: '@jest-runner/electron',
-  // testEnvironment: '@jest-runner/electron/environment',
-  testURL: 'http://localhost',
-
-  testRegex: ['./package.*/.*\\.(test)\\.ts$']
+  moduleNameMapper: {
+    "^@mobx-state-machine-router/core$": "<rootDir>/packages/core/src/index.ts",
+  },
+  collectCoverage: true,
+  collectCoverageFrom: [
+    "./packages/**/src/**/*.ts",
+    "!**/*.test.ts",
+    "!**/dist/**/*",
+    "!**/*.d.ts",
+  ],
+  coverageDirectory: "./coverage",
+  coverageReporters: ["lcov", "text", "cobertura"],
+  testRegex: ["./packages/.*/.*\\.(test)\\.ts$"],
+  testPathIgnorePatterns: ["/node_modules/", "/dist/"],
 };
