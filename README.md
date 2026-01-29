@@ -55,52 +55,47 @@ pnpm add @mobx-state-machine-router/core mobx
 ```typescript
 import MobxStateMachineRouter, { TStates } from '@mobx-state-machine-router/core';
 
-// 1. Define your states and actions
-enum STATE {
-  HOME = 'HOME',
-  PRODUCTS = 'PRODUCTS',
-  PRODUCT_DETAIL = 'PRODUCT_DETAIL',
-}
+// 1. Define your states and actions as string literal types
+type State = 'HOME' | 'PRODUCTS' | 'PRODUCT_DETAIL';
+type Action = 'viewProducts' | 'viewProduct' | 'goHome';
 
-enum ACTION {
-  viewProducts = 'viewProducts',
-  viewProduct = 'viewProduct',
-  goHome = 'goHome',
-}
+type Params = {
+  productId?: string;
+};
 
 // 2. Define the state machine
-const states: TStates<STATE, ACTION> = {
-  [STATE.HOME]: {
+const states: TStates<State, Action> = {
+  HOME: {
     actions: {
-      [ACTION.viewProducts]: STATE.PRODUCTS,
+      viewProducts: 'PRODUCTS',
     },
   },
-  [STATE.PRODUCTS]: {
+  PRODUCTS: {
     actions: {
-      [ACTION.goHome]: STATE.HOME,
-      [ACTION.viewProduct]: STATE.PRODUCT_DETAIL,
+      goHome: 'HOME',
+      viewProduct: 'PRODUCT_DETAIL',
     },
   },
-  [STATE.PRODUCT_DETAIL]: {
+  PRODUCT_DETAIL: {
     actions: {
-      [ACTION.goHome]: STATE.HOME,
-      [ACTION.viewProducts]: STATE.PRODUCTS,
+      goHome: 'HOME',
+      viewProducts: 'PRODUCTS',
     },
   },
 };
 
 // 3. Create the router
-const router = MobxStateMachineRouter({
+const router = MobxStateMachineRouter<State, Params, Action>({
   states,
-  currentState: { name: STATE.HOME, params: {} },
+  currentState: { name: 'HOME', params: {} },
 });
 
 // 4. Navigate by emitting actions
-router.emit(ACTION.viewProducts);
+router.emit('viewProducts');
 console.log(router.currentState.name); // 'PRODUCTS'
 
 // Pass params with navigation
-router.emit(ACTION.viewProduct, { productId: '123' });
+router.emit('viewProduct', { productId: '123' });
 console.log(router.currentState.params); // { productId: '123' }
 ```
 
@@ -108,7 +103,7 @@ console.log(router.currentState.params); // { productId: '123' }
 
 ```tsx
 import { observer } from 'mobx-react-lite';
-import { router, STATE, ACTION } from './router';
+import { router } from './router';
 
 const App = observer(() => {
   const { name, params } = router.currentState;
@@ -116,13 +111,13 @@ const App = observer(() => {
   return (
     <div>
       <nav>
-        <button onClick={() => router.emit(ACTION.goHome)}>Home</button>
-        <button onClick={() => router.emit(ACTION.viewProducts)}>Products</button>
+        <button onClick={() => router.emit('goHome')}>Home</button>
+        <button onClick={() => router.emit('viewProducts')}>Products</button>
       </nav>
 
-      {name === STATE.HOME && <HomePage />}
-      {name === STATE.PRODUCTS && <ProductsPage />}
-      {name === STATE.PRODUCT_DETAIL && <ProductDetail id={params.productId} />}
+      {name === 'HOME' && <HomePage />}
+      {name === 'PRODUCTS' && <ProductsPage />}
+      {name === 'PRODUCT_DETAIL' && <ProductDetail id={params.productId} />}
     </div>
   );
 });
@@ -159,8 +154,8 @@ router.currentState.params // Current params object
 Transition to a new state by emitting an action.
 
 ```typescript
-router.emit(ACTION.goHome);                    // Simple navigation
-router.emit(ACTION.viewProduct, { id: '1' });  // With params
+router.emit('goHome');                      // Simple navigation
+router.emit('viewProduct', { id: '1' });    // With params
 ```
 
 ### `observeParam(router, property, paramName, callback)`
@@ -202,8 +197,8 @@ import { intercept } from 'mobx';
 
 intercept(router, 'currentState', (change) => {
   // Redirect unauthenticated users
-  if (change.newValue.name === STATE.ADMIN && !isLoggedIn) {
-    return { ...change, newValue: { name: STATE.LOGIN, params: {} } };
+  if (change.newValue.name === 'ADMIN' && !isLoggedIn) {
+    return { ...change, newValue: { name: 'LOGIN', params: {} } };
   }
   return change;
 });
@@ -215,10 +210,10 @@ intercept(router, 'currentState', (change) => {
 import interceptAsync from 'mobx-async-intercept';
 
 interceptAsync(router, 'currentState', async (change) => {
-  if (change.newValue.name === STATE.CHECKOUT) {
+  if (change.newValue.name === 'CHECKOUT') {
     const canCheckout = await validateCart();
     if (!canCheckout) {
-      return { ...change, newValue: { name: STATE.CART_ERROR, params: {} } };
+      return { ...change, newValue: { name: 'CART_ERROR', params: {} } };
     }
   }
   return change;
@@ -238,30 +233,30 @@ import MobxStateMachineRouter from '@mobx-state-machine-router/core';
 import URLPersistence from '@mobx-state-machine-router/url-persistence';
 
 // Add URL to each state
-const states = {
-  [STATE.HOME]: {
-    actions: { [ACTION.viewProducts]: STATE.PRODUCTS },
+const states: TStates<State, Action> = {
+  HOME: {
+    actions: { viewProducts: 'PRODUCTS' },
     url: '/',
   },
-  [STATE.PRODUCTS]: {
-    actions: { [ACTION.viewProduct]: STATE.PRODUCT_DETAIL },
+  PRODUCTS: {
+    actions: { viewProduct: 'PRODUCT_DETAIL' },
     url: '/products',
   },
-  [STATE.PRODUCT_DETAIL]: {
-    actions: { [ACTION.viewProducts]: STATE.PRODUCTS },
+  PRODUCT_DETAIL: {
+    actions: { viewProducts: 'PRODUCTS' },
     url: '/product',
   },
 };
 
 // Create router with URL persistence
-const router = MobxStateMachineRouter({
+const router = MobxStateMachineRouter<State, Params, Action>({
   states,
-  currentState: { name: STATE.HOME, params: {} },
+  currentState: { name: 'HOME', params: {} },
   persistence: URLPersistence(),  // Uses hash history by default
 });
 
 // Navigation now updates the URL!
-router.emit(ACTION.viewProduct, { productId: '123' });
+router.emit('viewProduct', { productId: '123' });
 // URL: /#/product?productId=123
 ```
 
@@ -317,10 +312,10 @@ This library is written in TypeScript and provides full type inference:
 
 ```typescript
 // States and actions are type-checked
-router.emit(ACTION.invalidAction); // TS Error!
+router.emit('invalidAction'); // TS Error!
 
 // Params are typed
-router.emit(ACTION.viewProduct, { productId: 123 }); // TS Error if wrong type
+router.emit('viewProduct', { productId: 123 }); // TS Error if wrong type
 ```
 
 ## Packages

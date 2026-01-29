@@ -1,5 +1,5 @@
 import { observer } from "mobx-react-lite";
-import { router, ACTION } from "../../router";
+import { router } from "../../router";
 
 const products: Record<
   string,
@@ -94,7 +94,7 @@ export const ProductDetailPage = observer(() => {
         </p>
         <button
           className="bg-indigo-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors"
-          onClick={() => router.emit(ACTION.goProducts)}
+          onClick={() => router.emit("go-products")}
         >
           Back to Products
         </button>
@@ -110,7 +110,7 @@ export const ProductDetailPage = observer(() => {
     <div className="max-w-4xl mx-auto px-4 py-12">
       <button
         className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 font-medium mb-6 transition-colors"
-        onClick={() => router.emit(ACTION.goProducts)}
+        onClick={() => router.emit("go-products")}
       >
         <span>←</span>
         <span>Back to Products</span>
@@ -155,7 +155,7 @@ export const ProductDetailPage = observer(() => {
               key={p.id}
               className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 text-left hover:shadow-md hover:border-indigo-300 transition-all"
               onClick={() =>
-                router.emit(ACTION.viewProduct, { productId: p.id })
+                router.emit("view-product", { productId: p.id })
               }
             >
               <span className="font-medium text-gray-900">{p.name}</span>

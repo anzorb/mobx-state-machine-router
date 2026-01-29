@@ -1,5 +1,5 @@
 import { observer } from "mobx-react-lite";
-import { router, STATE } from "./router";
+import { router } from "./router";
 import { Navigation } from "./components/Navigation";
 import { LoadingOverlay } from "./components/LoadingOverlay";
 import { HomePage } from "./components/pages/HomePage";
@@ -14,17 +14,17 @@ const App = observer(() => {
 
   const renderPage = () => {
     switch (currentState) {
-      case STATE.HOME:
+      case "home":
         return <HomePage />;
-      case STATE.ABOUT:
+      case "about":
         return <AboutPage />;
-      case STATE.PRODUCTS:
+      case "products":
         return <ProductsPage />;
-      case STATE.PRODUCT_DETAIL:
+      case "product-detail":
         return <ProductDetailPage />;
-      case STATE.CONTACT:
+      case "contact":
         return <ContactPage />;
-      case STATE.REACT_INTEGRATION:
+      case "react-integration":
         return <ReactIntegrationPage />;
       default:
         return <HomePage />;

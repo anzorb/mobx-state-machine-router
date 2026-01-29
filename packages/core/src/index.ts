@@ -1,9 +1,5 @@
 import { action, observable, observe, autorun, IValueDidChange } from 'mobx';
 
-enum STATE {
-  HOME = 'HOME',
-}
-
 export interface IWriteFn<S extends string, P, A extends string> {
   (currentState: ICurrentState<S, P>, states: TStates<S, A>);
 }
@@ -77,7 +73,7 @@ export function observeParam<S, P, A>(
 function MobxStateMachineRouter<S extends string, P, A extends string>({
   states,
   currentState = {
-    name: STATE.HOME as S,
+    name: undefined,
     params: undefined,
   },
   persistence,

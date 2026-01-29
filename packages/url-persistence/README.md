@@ -31,53 +31,51 @@ npm install @mobx-state-machine-router/url-persistence @mobx-state-machine-route
 import MobxStateMachineRouter, { TStates } from '@mobx-state-machine-router/core';
 import URLPersistence from '@mobx-state-machine-router/url-persistence';
 
-enum STATE {
-  HOME = 'HOME',
-  PRODUCTS = 'PRODUCTS',
-  PRODUCT_DETAIL = 'PRODUCT_DETAIL',
-}
+// Define states and actions as string literal types
+type State = 'HOME' | 'PRODUCTS' | 'PRODUCT_DETAIL';
+type Action = 'viewProducts' | 'viewProduct' | 'goHome';
 
-enum ACTION {
-  viewProducts = 'viewProducts',
-  viewProduct = 'viewProduct',
-  goHome = 'goHome',
-}
+type Params = {
+  productId?: string;
+  category?: string;
+  search?: string;
+};
 
 // Add `url` to each state
-const states: TStates<STATE, ACTION> = {
-  [STATE.HOME]: {
-    actions: { [ACTION.viewProducts]: STATE.PRODUCTS },
+const states: TStates<State, Action> = {
+  HOME: {
+    actions: { viewProducts: 'PRODUCTS' },
     url: '/',
   },
-  [STATE.PRODUCTS]: {
+  PRODUCTS: {
     actions: {
-      [ACTION.goHome]: STATE.HOME,
-      [ACTION.viewProduct]: STATE.PRODUCT_DETAIL,
-      [ACTION.viewProducts]: STATE.PRODUCTS, // Self-transition for param updates
+      goHome: 'HOME',
+      viewProduct: 'PRODUCT_DETAIL',
+      viewProducts: 'PRODUCTS', // Self-transition for param updates
     },
     url: '/products',
   },
-  [STATE.PRODUCT_DETAIL]: {
-    actions: { [ACTION.viewProducts]: STATE.PRODUCTS },
+  PRODUCT_DETAIL: {
+    actions: { viewProducts: 'PRODUCTS' },
     url: '/product',
   },
 };
 
 // Create router with URL persistence
-const router = MobxStateMachineRouter({
+const router = MobxStateMachineRouter<State, Params, Action>({
   states,
-  currentState: { name: STATE.HOME, params: {} },
+  currentState: { name: 'HOME', params: {} },
   persistence: URLPersistence(),
 });
 
 // Navigation now updates the URL!
-router.emit(ACTION.viewProducts);
+router.emit('viewProducts');
 // URL: /#/products
 
-router.emit(ACTION.viewProduct, { productId: '123' });
+router.emit('viewProduct', { productId: '123' });
 // URL: /#/product?productId=123
 
-router.emit(ACTION.viewProducts, { category: 'electronics', search: 'phone' });
+router.emit('viewProducts', { category: 'electronics', search: 'phone' });
 // URL: /#/products?category=electronics&search=phone
 ```
 
@@ -152,9 +150,9 @@ URLPersistence({
 To update query parameters without changing state, add a self-transition:
 
 ```typescript
-[STATE.PRODUCTS]: {
+PRODUCTS: {
   actions: {
-    [ACTION.viewProducts]: STATE.PRODUCTS, // Self-transition
+    viewProducts: 'PRODUCTS', // Self-transition
     // ... other actions
   },
   url: '/products',
@@ -165,7 +163,7 @@ Then emit with new params:
 
 ```typescript
 // Update filters on the same page
-router.emit(ACTION.viewProducts, { category: 'electronics' });
+router.emit('viewProducts', { category: 'electronics' });
 ```
 
 ## Usage with React
@@ -177,7 +175,7 @@ const ProductsPage = observer(() => {
   const { category, search } = router.currentState.params;
 
   const handleCategoryChange = (cat: string) => {
-    router.emit(ACTION.viewProducts, { ...router.currentState.params, category: cat });
+    router.emit('viewProducts', { ...router.currentState.params, category: cat });
   };
 
   return (

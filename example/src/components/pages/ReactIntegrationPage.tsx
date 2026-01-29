@@ -59,47 +59,43 @@ export const ReactIntegrationPage = observer(() => {
             {`import MobxStateMachineRouter, { TStates } from "@mobx-state-machine-router/core";
 import URLPersistence from "@mobx-state-machine-router/url-persistence";
 
-// Define states and actions as enums for type safety
-enum STATE {
-  HOME = "HOME",
-  PRODUCTS = "PRODUCTS",
-  PRODUCT_DETAIL = "PRODUCT_DETAIL",
-}
+// Define states and actions as string literal types (kebab-case)
+type State = "home" | "products" | "product-detail";
+type Action = "go-home" | "go-products" | "view-product";
 
-enum ACTION {
-  goHome = "goHome",
-  goProducts = "goProducts",
-  viewProduct = "viewProduct",
-}
+type Params = {
+  productId?: string;
+  category?: string;
+};
 
 // Define the state machine
-const states: TStates<STATE, ACTION> = {
-  [STATE.HOME]: {
+const states: TStates<State, Action> = {
+  home: {
     actions: {
-      [ACTION.goProducts]: STATE.PRODUCTS,
+      "go-products": "products",
     },
     url: "/",
   },
-  [STATE.PRODUCTS]: {
+  products: {
     actions: {
-      [ACTION.goHome]: STATE.HOME,
-      [ACTION.goProducts]: STATE.PRODUCTS, // Self-transition for params
-      [ACTION.viewProduct]: STATE.PRODUCT_DETAIL,
+      "go-home": "home",
+      "go-products": "products", // Self-transition for params
+      "view-product": "product-detail",
     },
     url: "/products",
   },
-  [STATE.PRODUCT_DETAIL]: {
+  "product-detail": {
     actions: {
-      [ACTION.goProducts]: STATE.PRODUCTS,
+      "go-products": "products",
     },
     url: "/product",
   },
 };
 
 // Create router with URL persistence (hash routing)
-export const router = MobxStateMachineRouter({
+export const router = MobxStateMachineRouter<State, Params, Action>({
   states,
-  currentState: { name: STATE.HOME, params: {} },
+  currentState: { name: "home", params: {} },
   persistence: URLPersistence(), // Enables hash-based URLs
 });`}
           </CodeBlock>
@@ -119,7 +115,7 @@ export const router = MobxStateMachineRouter({
 
         <CodeBlock title="App.tsx" language="tsx">
           {`import { observer } from "mobx-react-lite";
-import { router, STATE, ACTION } from "./router";
+import { router } from "./router";
 
 const App = observer(() => {
   const { name, params } = router.currentState;
@@ -127,18 +123,18 @@ const App = observer(() => {
   return (
     <div>
       <nav>
-        <button onClick={() => router.emit(ACTION.goHome)}>
+        <button onClick={() => router.emit("go-home")}>
           Home
         </button>
-        <button onClick={() => router.emit(ACTION.goProducts)}>
+        <button onClick={() => router.emit("go-products")}>
           Products
         </button>
       </nav>
 
       {/* Render based on current state */}
-      {name === STATE.HOME && <HomePage />}
-      {name === STATE.PRODUCTS && <ProductsPage />}
-      {name === STATE.PRODUCT_DETAIL && (
+      {name === "home" && <HomePage />}
+      {name === "products" && <ProductsPage />}
+      {name === "product-detail" && (
         <ProductDetail productId={params.productId} />
       )}
     </div>
@@ -162,7 +158,7 @@ const App = observer(() => {
 
   const handleFilter = (newCategory: string) => {
     // Self-transition to update params without changing state
-    router.emit(ACTION.goProducts, {
+    router.emit("go-products", {
       ...router.currentState.params,
       category: newCategory,
     });
@@ -170,7 +166,7 @@ const App = observer(() => {
   };
 
   const handleViewProduct = (id: string) => {
-    router.emit(ACTION.viewProduct, { productId: id });
+    router.emit("view-product", { productId: id });
     // URL becomes: /#/product?productId=123
   };
 
@@ -255,14 +251,14 @@ useEffect(() => {
 
 // Protect routes that require authentication
 intercept(router, "currentState", (change) => {
-  const protectedStates = [STATE.PROFILE, STATE.SETTINGS];
+  const protectedStates = ["profile", "settings"];
 
   if (protectedStates.includes(change.newValue.name) && !isAuthenticated) {
     // Redirect to login instead
     return {
       ...change,
       newValue: {
-        name: STATE.LOGIN,
+        name: "login",
         params: { returnTo: change.newValue.name },
       },
     };
@@ -291,7 +287,7 @@ intercept(router, "currentState", (change) => {
 
 // Async permission check before navigation
 interceptAsync(router, "currentState", async (change) => {
-  if (change.newValue.name === STATE.ADMIN) {
+  if (change.newValue.name === "admin") {
     // Check permissions with API call
     const hasPermission = await checkAdminPermission();
     
@@ -299,7 +295,7 @@ interceptAsync(router, "currentState", async (change) => {
       return {
         ...change,
         newValue: {
-          name: STATE.UNAUTHORIZED,
+          name: "unauthorized",
           params: {},
         },
       };
@@ -311,7 +307,7 @@ interceptAsync(router, "currentState", async (change) => {
 
 // Async data validation before leaving a page
 interceptAsync(router, "currentState", async (change) => {
-  if (router.currentState.name === STATE.CHECKOUT) {
+  if (router.currentState.name === "checkout") {
     // Validate cart before leaving checkout
     const isValid = await validateCart();
     
@@ -326,7 +322,7 @@ interceptAsync(router, "currentState", async (change) => {
 
 // Load data before entering a page
 interceptAsync(router, "currentState", async (change) => {
-  if (change.newValue.name === STATE.PRODUCT_DETAIL) {
+  if (change.newValue.name === "product-detail") {
     const productId = change.newValue.params.productId;
     
     try {
@@ -337,7 +333,7 @@ interceptAsync(router, "currentState", async (change) => {
       return {
         ...change,
         newValue: {
-          name: STATE.NOT_FOUND,
+          name: "not-found",
           params: { message: "Product not found" },
         },
       };

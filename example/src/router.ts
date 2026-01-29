@@ -5,25 +5,23 @@ import URLPersistence from "@mobx-state-machine-router/url-persistence";
 import { observable, action } from "mobx";
 import interceptAsync from "mobx-async-intercept";
 
-// Define the possible states (pages) in our app
-export enum STATE {
-  HOME = "HOME",
-  ABOUT = "ABOUT",
-  PRODUCTS = "PRODUCTS",
-  PRODUCT_DETAIL = "PRODUCT_DETAIL",
-  CONTACT = "CONTACT",
-  REACT_INTEGRATION = "REACT_INTEGRATION",
-}
+// Define the possible states (pages) using string literal types
+export type State =
+  | "home"
+  | "about"
+  | "products"
+  | "product-detail"
+  | "contact"
+  | "react-integration";
 
-// Define the possible actions (navigation events)
-export enum ACTION {
-  goHome = "goHome",
-  goAbout = "goAbout",
-  goProducts = "goProducts",
-  viewProduct = "viewProduct",
-  goContact = "goContact",
-  goReactIntegration = "goReactIntegration",
-}
+// Define the possible actions (navigation events) using string literal types
+export type Action =
+  | "go-home"
+  | "go-about"
+  | "go-products"
+  | "view-product"
+  | "go-contact"
+  | "go-react-integration";
 
 // Define the params that can be passed between states
 export type RouterParams = {
@@ -34,76 +32,76 @@ export type RouterParams = {
 
 // Define the state machine configuration
 // Each state has a list of actions and the state they transition to
-export const states: TStates<STATE, ACTION> = {
-  [STATE.HOME]: {
+export const states: TStates<State, Action> = {
+  home: {
     actions: {
-      [ACTION.goAbout]: STATE.ABOUT,
-      [ACTION.goProducts]: STATE.PRODUCTS,
-      [ACTION.goContact]: STATE.CONTACT,
-      [ACTION.goReactIntegration]: STATE.REACT_INTEGRATION,
+      "go-about": "about",
+      "go-products": "products",
+      "go-contact": "contact",
+      "go-react-integration": "react-integration",
     },
     url: "/",
   },
-  [STATE.ABOUT]: {
+  about: {
     actions: {
-      [ACTION.goHome]: STATE.HOME,
-      [ACTION.goProducts]: STATE.PRODUCTS,
-      [ACTION.goContact]: STATE.CONTACT,
-      [ACTION.goReactIntegration]: STATE.REACT_INTEGRATION,
+      "go-home": "home",
+      "go-products": "products",
+      "go-contact": "contact",
+      "go-react-integration": "react-integration",
     },
     url: "/about",
   },
-  [STATE.PRODUCTS]: {
+  products: {
     actions: {
-      [ACTION.goHome]: STATE.HOME,
-      [ACTION.goAbout]: STATE.ABOUT,
-      [ACTION.goProducts]: STATE.PRODUCTS, // Self-transition to update params
-      [ACTION.viewProduct]: STATE.PRODUCT_DETAIL,
-      [ACTION.goContact]: STATE.CONTACT,
-      [ACTION.goReactIntegration]: STATE.REACT_INTEGRATION,
+      "go-home": "home",
+      "go-about": "about",
+      "go-products": "products", // Self-transition to update params
+      "view-product": "product-detail",
+      "go-contact": "contact",
+      "go-react-integration": "react-integration",
     },
     url: "/products",
   },
-  [STATE.PRODUCT_DETAIL]: {
+  "product-detail": {
     actions: {
-      [ACTION.goHome]: STATE.HOME,
-      [ACTION.goAbout]: STATE.ABOUT,
-      [ACTION.goProducts]: STATE.PRODUCTS,
-      [ACTION.viewProduct]: STATE.PRODUCT_DETAIL, // Can navigate to another product
-      [ACTION.goContact]: STATE.CONTACT,
-      [ACTION.goReactIntegration]: STATE.REACT_INTEGRATION,
+      "go-home": "home",
+      "go-about": "about",
+      "go-products": "products",
+      "view-product": "product-detail", // Can navigate to another product
+      "go-contact": "contact",
+      "go-react-integration": "react-integration",
     },
     url: "/product",
   },
-  [STATE.CONTACT]: {
+  contact: {
     actions: {
-      [ACTION.goHome]: STATE.HOME,
-      [ACTION.goAbout]: STATE.ABOUT,
-      [ACTION.goProducts]: STATE.PRODUCTS,
-      [ACTION.goReactIntegration]: STATE.REACT_INTEGRATION,
+      "go-home": "home",
+      "go-about": "about",
+      "go-products": "products",
+      "go-react-integration": "react-integration",
     },
     url: "/contact",
   },
-  [STATE.REACT_INTEGRATION]: {
+  "react-integration": {
     actions: {
-      [ACTION.goHome]: STATE.HOME,
-      [ACTION.goAbout]: STATE.ABOUT,
-      [ACTION.goProducts]: STATE.PRODUCTS,
-      [ACTION.goContact]: STATE.CONTACT,
-      [ACTION.goReactIntegration]: STATE.REACT_INTEGRATION, // Self-transition for params
+      "go-home": "home",
+      "go-about": "about",
+      "go-products": "products",
+      "go-contact": "contact",
+      "go-react-integration": "react-integration", // Self-transition for params
     },
     url: "/react-integration",
   },
 };
 
 // Create URL persistence layer with hash routing
-const persistence = URLPersistence<STATE, RouterParams, ACTION>();
+const persistence = URLPersistence<State, RouterParams, Action>();
 
 // Create the router instance
-export const router = MobxStateMachineRouter<STATE, RouterParams, ACTION>({
+export const router = MobxStateMachineRouter<State, RouterParams, Action>({
   states,
   currentState: {
-    name: STATE.HOME,
+    name: "home",
     params: {},
   },
   persistence,
@@ -134,7 +132,7 @@ const fetchProductData = (productId: string): Promise<void> => {
 
 // Async intercept for product detail page - shows loading spinner
 interceptAsync(router, "currentState", async (change) => {
-  if (change.newValue.name === STATE.PRODUCT_DETAIL) {
+  if (change.newValue.name === "product-detail") {
     const productId = change.newValue.params?.productId;
 
     // Show loading spinner
