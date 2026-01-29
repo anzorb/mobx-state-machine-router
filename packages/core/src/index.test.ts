@@ -94,7 +94,7 @@ describe('init', () => {
     // Create a mock persistence that can trigger state changes
     const mockPersistence = observable({
       currentState: {
-        name: '/',  // Valid route that maps to HOME
+        name: '/', // Valid route that maps to HOME
         params: {},
       },
       write: jest.fn(),
