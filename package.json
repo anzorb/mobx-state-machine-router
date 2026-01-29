@@ -18,10 +18,7 @@
     "prettier:check": "prettier --check 'packages/**/src/**/*.{js,jsx,ts,tsx,json,css,scss,md}'",
     "prettier:write": "prettier --write 'packages/**/src/**/*.{js,jsx,ts,tsx,json,css,scss,md}'",
     "prepare": "pnpm run build",
-    "prerelease": "pnpm run prettier:write && pnpm run test:coverage && pnpm run build",
-    "release:patch": "pnpm -r exec npm version patch && npm version patch --no-git-tag-version",
-    "release:minor": "pnpm -r exec npm version minor && npm version minor --no-git-tag-version",
-    "release:major": "pnpm -r exec npm version major && npm version major --no-git-tag-version"
+    "prerelease": "pnpm run prettier:write && pnpm run test:coverage && pnpm run build"
   },
   "devDependencies": {
     "@eslint/js": "^9.22.0",
