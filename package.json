@@ -18,7 +18,10 @@
     "prettier:check": "prettier --check 'packages/**/src/**/*.{js,jsx,ts,tsx,json,css,scss,md}'",
     "prettier:write": "prettier --write 'packages/**/src/**/*.{js,jsx,ts,tsx,json,css,scss,md}'",
     "prepare": "pnpm run build",
-    "prerelease": "pnpm run prettier:write && pnpm run test:coverage && pnpm run build"
+    "prerelease": "pnpm run prettier:write && pnpm run test:coverage && pnpm run build",
+    "release:patch": "pnpm --filter './packages/*' exec npm version patch",
+    "release:minor": "pnpm --filter './packages/*' exec npm version minor",
+    "release:major": "pnpm --filter './packages/*' exec npm version major"
   },
   "devDependencies": {
     "@eslint/js": "^9.22.0",
@@ -33,6 +36,5 @@
     "tsup": "^8.4.0",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.24.1"
-  },
-  "version": "5.1.4"
+  }
 }
