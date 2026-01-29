@@ -20,7 +20,7 @@ aliases:
   - &install_pnpm
     run:
       name: Install pnpm
-      command: corepack enable && corepack prepare pnpm@9.15.4 --activate
+      command: sudo npm install -g pnpm@9.15.4
 
   - &run_pnpm_install
     run:
