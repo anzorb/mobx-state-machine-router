@@ -1,3 +1,27 @@
+import { Highlight, themes } from "prism-react-renderer";
+
+const CodeBlock = ({
+  children,
+  language = "typescript",
+}: {
+  children: string;
+  language?: string;
+}) => (
+  <Highlight theme={themes.nightOwl} code={children.trim()} language={language}>
+    {({ style, tokens, getLineProps, getTokenProps }) => (
+      <pre className="p-6 rounded-xl overflow-x-auto text-sm" style={style}>
+        {tokens.map((line, i) => (
+          <div key={i} {...getLineProps({ line })}>
+            {line.map((token, key) => (
+              <span key={key} {...getTokenProps({ token })} />
+            ))}
+          </div>
+        ))}
+      </pre>
+    )}
+  </Highlight>
+);
+
 export const AboutPage = () => {
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
@@ -31,25 +55,33 @@ export const AboutPage = () => {
         <h2 className="text-2xl font-semibold text-gray-900 mb-4">
           State Machine Definition
         </h2>
-        <pre className="bg-gray-900 text-gray-100 p-6 rounded-xl overflow-x-auto text-sm">
-          <code>{`const states = {
-  HOME: {
+        <CodeBlock>
+          {`const states: TStates<STATE, ACTION> = {
+  [STATE.HOME]: {
     actions: {
-      goAbout: "ABOUT",
-      goProducts: "PRODUCTS",
+      [ACTION.goAbout]: STATE.ABOUT,
+      [ACTION.goProducts]: STATE.PRODUCTS,
     },
     url: "/",
   },
-  ABOUT: {
+  [STATE.ABOUT]: {
     actions: {
-      goHome: "HOME",
-      goProducts: "PRODUCTS",
+      [ACTION.goHome]: STATE.HOME,
+      [ACTION.goProducts]: STATE.PRODUCTS,
     },
     url: "/about",
   },
+  [STATE.PRODUCTS]: {
+    actions: {
+      [ACTION.goHome]: STATE.HOME,
+      [ACTION.goProducts]: STATE.PRODUCTS, // Self-transition for params
+      [ACTION.viewProduct]: STATE.PRODUCT_DETAIL,
+    },
+    url: "/products",
+  },
   // ... more states
-};`}</code>
-        </pre>
+};`}
+        </CodeBlock>
       </section>
 
       <section>

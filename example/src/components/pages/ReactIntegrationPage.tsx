@@ -117,7 +117,7 @@ export const router = MobxStateMachineRouter({
           automatically re-render when state changes:
         </p>
 
-        <CodeBlock title="App.tsx">
+        <CodeBlock title="App.tsx" language="tsx">
           {`import { observer } from "mobx-react-lite";
 import { router, STATE, ACTION } from "./router";
 
@@ -156,7 +156,7 @@ const App = observer(() => {
           Navigate by emitting actions. Pass params to update the URL query string:
         </p>
 
-        <CodeBlock title="ProductsPage.tsx">
+        <CodeBlock title="ProductsPage.tsx" language="tsx">
           {`const ProductsPage = observer(() => {
   const { category, search } = router.currentState.params;
 
@@ -202,7 +202,7 @@ const App = observer(() => {
           <code className="bg-gray-100 px-1.5 py-0.5 rounded text-sm font-mono">autorun</code> for side effects:
         </p>
 
-        <CodeBlock title="Analytics & Effects">
+        <CodeBlock title="Analytics & Effects" language="typescript">
           {`import { observe, autorun } from "mobx";
 import { observeParam } from "@mobx-state-machine-router/core";
 
@@ -250,7 +250,7 @@ useEffect(() => {
           Use <code className="bg-gray-100 px-1.5 py-0.5 rounded text-sm font-mono">intercept</code> to guard routes or redirect:
         </p>
 
-        <CodeBlock title="Sync Auth Guard">
+        <CodeBlock title="Sync Auth Guard" language="typescript">
           {`import { intercept } from "mobx";
 
 // Protect routes that require authentication
@@ -286,7 +286,7 @@ intercept(router, "currentState", (change) => {
           <code className="bg-gray-100 px-1.5 py-0.5 rounded text-sm font-mono">mobx-async-intercept</code>:
         </p>
 
-        <CodeBlock title="Async Route Guard">
+        <CodeBlock title="Async Route Guard" language="typescript">
           {`import interceptAsync from "mobx-async-intercept";
 
 // Async permission check before navigation
